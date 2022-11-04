@@ -1,14 +1,14 @@
 defmodule LiveKnit.Machine.PassapTest do
   use ExUnit.Case
 
-  alias LiveKnit.Machine
-  alias LiveKnit.Pattern
+  alias LiveKnit.{Machine, Pattern, Settings}
 
   test "passap machine" do
     {:ok, pixels} = Pixels.read_file(__DIR__ <> "/../images/dot.png")
     rows = Pattern.from_pixels(pixels)
+    settings = %Settings{image: rows, width: 8}
 
-    machine = Machine.load(%Machine.Passap{repeat: false}, rows)
+    machine = Machine.load(%Machine.Passap{}, settings)
 
     assert {instructions, machine} = Machine.knit(machine)
     assert [{:write, "P:00000000"}, {:status, %{direction: :rtl, color: 0}}] = instructions
@@ -39,7 +39,7 @@ defmodule LiveKnit.Machine.PassapTest do
     # next 6 rows, = 6 * 4 knits..
 
     machine =
-      for n <- 1..24, reduce: machine do
+      for _ <- 1..24, reduce: machine do
         machine ->
           {_instructions, machine} = Machine.knit(machine)
           machine
@@ -51,10 +51,19 @@ defmodule LiveKnit.Machine.PassapTest do
   end
 
   test "infinite repeat" do
-    machine = Machine.load(%Machine.Passap{repeat: true}, ["11001100"])
+    settings = %Settings{image: ["11001100"], repeat_y: true}
+    machine = Machine.load(%Machine.Passap{}, settings)
 
     for _ <- 1..100, reduce: machine do
       machine -> Machine.knit(machine) |> elem(1)
     end
+  end
+
+  test "pattern repeat" do
+    settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 80}
+    machine = Machine.load(%Machine.Passap{}, settings)
+
+    assert {instructions, _machine} = Machine.knit(machine)
+    assert [{:write, "P:100100100" <> _}, {:status, _}] = instructions
   end
 end

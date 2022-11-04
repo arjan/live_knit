@@ -5,9 +5,11 @@ end
 defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   alias LiveKnit.Machine.Passap, as: State
   alias LiveKnit.Pattern
+  alias LiveKnit.Settings
 
-  def load(state, rows) do
-    %State{state | rows: rows, data: rows}
+  def load(state, settings) do
+    rows = Settings.to_pattern(settings)
+    %State{state | rows: rows, data: rows, repeat: settings.repeat_y}
   end
 
   def knit(%State{direction: :rtl, color: 0, rows: [], repeat: false} = _state) do
