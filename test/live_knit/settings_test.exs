@@ -15,5 +15,11 @@ defmodule LiveKnit.SettingsTest do
 
     s = %Settings{width: 10, image: ["10"], repeat_x: true, double_x: true}
     assert ["1100110011"] = Settings.to_pattern(s)
+
+    s = %Settings{width: 10, image: ["10"], double_x: true}
+    assert ["0001100000"] = Settings.to_pattern(s)
+
+    s = %Settings{width: 10, image: ["10"], repeat_x: true, double_x: true, double_y: true}
+    assert ["1100110011", "1100110011"] = Settings.to_pattern(s)
   end
 end

@@ -37,7 +37,7 @@ defmodule LiveKnit.Application do
   defp find_arduino() do
     Nerves.UART.enumerate()
     |> Enum.find(fn {_k, v} ->
-      String.starts_with?(v.manufacturer, "Arduino")
+      String.starts_with?(Map.get(v, :manufacturer), "Arduino")
     end)
   end
 end
