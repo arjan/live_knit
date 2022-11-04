@@ -87,6 +87,12 @@ defmodule LiveKnit.Machine.PassapTest do
     settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 80}
     machine = Machine.load(%Machine.Passap{}, settings)
 
-    assert ["100100" <> _, "010010" <> _, "001001" <> _] = Machine.peek(machine, 3)
+    assert ["100100" <> _, "010010" <> _, "001001" <> _, _, _] = Machine.peek(machine, 5)
+
+    ##
+    settings = %Settings{image: ["100", "010", "001"], repeat_y: false, repeat_x: true, width: 80}
+    machine = Machine.load(%Machine.Passap{}, settings)
+
+    assert ["100100" <> _, "010010" <> _, "001001" <> _] = Machine.peek(machine, 5)
   end
 end

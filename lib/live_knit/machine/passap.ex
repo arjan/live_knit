@@ -74,7 +74,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   def interpret_serial(_machine, _data), do: :ignore
 
   @impl true
-  def peek(machine, n) do
+  def peek(%{repeat: true} = machine, n) do
     repeats = ceil(n / Enum.count(machine.data))
 
     [
@@ -84,6 +84,11 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
       end
     ]
     |> List.flatten()
+    |> Enum.slice(0, n)
+  end
+
+  def peek(%{repeat: false} = machine, n) do
+    machine.rows
     |> Enum.slice(0, n)
   end
 

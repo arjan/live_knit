@@ -5,6 +5,9 @@ defmodule LiveKnit.Control do
 
   alias LiveKnit.{Serial, Machine, Settings}
 
+  @topic "control"
+  def topic(), do: @topic
+
   defstruct machine: nil,
             knitting: false,
             calibrated: false,
@@ -18,8 +21,16 @@ defmodule LiveKnit.Control do
     GenServer.call(__MODULE__, :status)
   end
 
+  def reset() do
+    GenServer.call(__MODULE__, :reset)
+  end
+
   def set_knitting(flag) do
     GenServer.call(__MODULE__, {:set_knitting, flag})
+  end
+
+  def change_settings(attrs) do
+    GenServer.call(__MODULE__, {:change_settings, attrs})
   end
 
   def start_link(_) do
@@ -39,8 +50,23 @@ defmodule LiveKnit.Control do
     {:reply, get_status(state), state}
   end
 
+  def handle_call(:reset, _from, state) do
+    {:reply, :ok, reset(state) |> broadcast()}
+  end
+
   def handle_call({:set_knitting, flag}, _from, state) do
-    {:reply, :ok, %State{state | knitting: flag}}
+    {:reply, :ok, %State{state | knitting: flag} |> broadcast()}
+  end
+
+  def handle_call({:change_settings, attrs}, _from, state) do
+    case Settings.apply(state.settings, attrs) do
+      {:ok, settings} ->
+        machine = Machine.load(%Machine.Passap{}, settings)
+        {:reply, :ok, %State{settings: settings, machine: machine} |> broadcast()}
+
+      {:error, message} ->
+        {:reply, {:error, message}, state}
+    end
   end
 
   def handle_info({:serial_out, _data}, state) do
@@ -48,8 +74,17 @@ defmodule LiveKnit.Control do
   end
 
   def handle_info({:serial_in, data}, state) do
+    IO.inspect(data, label: "data")
+
     state =
       case Machine.interpret_serial(state.machine, data) do
+        :calibration_done ->
+          if state.knitting and state.machine_status == %{} do
+            knit(state)
+          else
+            state
+          end
+
         :knit_row ->
           if state.knitting do
             knit(state)
@@ -79,11 +114,22 @@ defmodule LiveKnit.Control do
       :done ->
         Logger.warn("- machine done -")
 
-        %State{state | knitting: false, machine: Machine.reset(state.machine)}
+        reset(state)
 
       {instructions, machine} ->
         Enum.reduce(instructions, %State{state | machine: machine}, &handle_instruction/2)
     end
+    |> broadcast()
+  end
+
+  defp reset(state) do
+    %State{
+      state
+      | knitting: false,
+        machine: Machine.reset(state.machine),
+        history: [],
+        machine_status: %{}
+    }
   end
 
   defp handle_instruction({:write, data}, state) do
@@ -104,5 +150,11 @@ defmodule LiveKnit.Control do
   defp get_status(state) do
     Map.take(state, ~w(knitting calibrated machine_status history settings)a)
     |> Map.put(:upcoming, Machine.peek(state.machine, 20))
+  end
+
+  defp broadcast(state) do
+    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:status, get_status(state)})
+
+    state
   end
 end
