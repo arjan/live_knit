@@ -47,11 +47,6 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket}
   end
 
-  def handle_event("step", _, socket) do
-    send(Control, :knit)
-    {:noreply, socket}
-  end
-
   def handle_event("calibrate", _, socket) do
     send(Control, {:serial_in, "R:fc"})
     {:noreply, socket}

@@ -1,6 +1,6 @@
 defmodule LiveKnit.Machine.Passap do
   defstruct color: 0,
-            direction: :rtl,
+            direction: :uncalibrated,
             current_pattern: "",
             rows: [],
             data: [],
@@ -22,10 +22,23 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     # center the work on the bed
     first_needle = ceil(@bed_width / 2 + settings.width / 2)
 
-    %State{state | rows: rows, data: rows, repeat: settings.repeat_y, first_needle: first_needle}
+    machine = %State{
+      state
+      | direction: :uncalibrated,
+        rows: rows,
+        data: rows,
+        repeat: settings.repeat_y,
+        first_needle: first_needle
+    }
+
+    {[state_instruction(machine)], machine}
   end
 
   @impl true
+  def knit(%State{direction: :uncalibrated} = state) do
+    {[], state}
+  end
+
   def knit(%State{direction: :rtl, color: 0, rows: [], repeat: false} = _state) do
     :done
   end
@@ -65,13 +78,31 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   end
 
   defp state_instruction(state) do
-    {:status, %{direction: state.direction, color: state.color}}
+    center = div(@bed_width, 2)
+    left_needle = state.first_needle - String.length(List.first(state.data)) - center
+    right_needle = state.first_needle - center
+
+    {:status,
+     %{
+       direction: state.direction,
+       color: state.color,
+       left_needle: left_needle,
+       right_needle: right_needle
+     }}
   end
 
   @impl true
-  def interpret_serial(_machine, "R:fc"), do: :calibration_done
-  def interpret_serial(_machine, "E:1"), do: :knit_row
-  def interpret_serial(_machine, _data), do: :ignore
+  def interpret_serial(machine, "R:fc") do
+    calibrated(machine)
+  end
+
+  def interpret_serial(machine, "E:1") do
+    knit(machine)
+  end
+
+  def interpret_serial(machine, _data) do
+    {[], machine}
+  end
 
   @impl true
   def peek(%{repeat: true} = machine, n) do
@@ -93,11 +124,23 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   @impl true
   def reset(machine) do
-    %State{
+    state = %State{
       rows: machine.data,
       data: machine.data,
       repeat: machine.repeat,
       first_needle: machine.first_needle
     }
+
+    {[state_instruction(state)], state}
+  end
+
+  @impl true
+
+  def calibrated(%State{direction: :uncalibrated} = machine) do
+    knit(%State{machine | direction: :rtl, color: 0})
+  end
+
+  def calibrated(machine) do
+    {[], machine}
   end
 end

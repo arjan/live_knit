@@ -1,40 +1,43 @@
 <div class="row">
-  <div class="col-8">
-    <h5>Upcoming</h5>
+  <div class="col-8 pt-5 bg-light border knitting-area">
 
-    <div class="knitting future #{knitting_size_class(@control.settings.width)}">
+    <div class="needle left"><%= @control.machine_status.left_needle %></div>
+    <div class="needle right"><%= @control.machine_status.right_needle %></div>
+
+    <div class={"knitting future #{knitting_size_class(@control.settings.width)}"}>
       <%= for row <- Enum.reverse(@control.upcoming) do %>
         <PatternRow.row row={row} />
       <% end %>
     </div>
 
-    <div class="knitting history #{knitting_size_class(@control.settings.width)}">
-      <%= for row <- @control.history do %>
-        <PatternRow.row row={row} current={row==List.first(@control.history)} />
+    <div class={"knitting history #{knitting_size_class(@control.settings.width)}"}>
+      <%= for {row, index} <- Enum.with_index(@control.history) do %>
+        <PatternRow.row row={row} current={index == 0} />
       <% end %>
     </div>
-
-    <hr />
-    <h3>Status</h3>
-    <pre><%= Jason.encode!(@control, pretty: true) %></pre>
   </div>
+
   <div class="col">
 
-    <h5>Machine status</h5>
+    <div class={"mb-3 p-3 border #{@control.knitting && "bg-success text-bg-success" || "bg-light"}"}>
+      <h5>Machine: <%= if @control.knitting do %>Knitting<% else %>Stopped<% end %></h5>
 
-    <div class="mb-3">
+      <%= if @control.knitting do %>
+        <%= if @control.machine_status.direction == :uncalibrated do %>
+          <h1>🢂</h1> Move carriage left for calibration
+        <% else %>
 
-      <%= if @control.machine_status != %{} do %>
-        <%= if @control.machine_status.direction == :rtl do %>
-          <h1>🢀</h1> Moving left,
+          <%= if @control.machine_status.direction == :rtl do %>
+            <h1>🢀</h1> Moving left,
+          <% end %>
+          <%= if @control.machine_status.direction == :ltr do %>
+            <h1>🢂</h1> Moving right,
+          <% end %>
+          color:
+          <span class={"color-indicator yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
         <% end %>
-        <%= if @control.machine_status.direction == :ltr do %>
-          <h1>🢂</h1> Moving right,
-        <% end %>
-        color:
-        <span class={"color-indicator yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
-      <%= else %>
-        <h1>🢂</h1> Move carriage left for calibration
+      <% else %>
+        Please set the pattern and press 'start'.
       <% end %>
     </div>
 
@@ -46,22 +49,21 @@
       </div>
 
       <div class="col text-end">
-        <button type="button" phx-click="step" class="btn btn-secondary btn-md" disabled={@control.knitting} title="Manual step">S</button>
-        <button type="button" phx-click="calibrate" class="btn btn-secondary btn-md" title="Calibrated signal">C</button>
-        <button type="button" phx-click="pattern_end" class="btn btn-secondary btn-md" title="Send pattern end">E</button>
+        <button type="button" phx-click="calibrate" class="btn btn-secondary btn-md" disabled={!@control.knitting} title="Calibrated signal">C</button>
+        <button type="button" phx-click="pattern_end" class="btn btn-secondary btn-md" disabled={!@control.knitting} title="Send pattern end">E</button>
         <button type="button" phx-click="reset" class="btn btn-danger btn-md">Reset</button>
       </div>
     </div>
 
     <.live_component id="settings" module={Settings}
-    settings={@control.settings} />
+    settings={@control.settings} disabled={@control.knitting} />
 
     <div class="mb-3 p-3 bg-light border">
-      <h4>Serial</h4>
+      <h5>Data</h5>
       <pre
         class="bg-light"
-      ><code><%= Jason.encode!(@serial_log, pretty: true) %></code>
-      </pre>
+      ><code><%= for line <- @serial_log do %><%= line %>
+      <% end %></code></pre>
     </div>
   </div>
 </div>

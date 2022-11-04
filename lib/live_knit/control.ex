@@ -10,7 +10,6 @@ defmodule LiveKnit.Control do
 
   defstruct machine: nil,
             knitting: false,
-            calibrated: false,
             settings: %Settings{},
             machine_status: %{},
             history: []
@@ -42,8 +41,11 @@ defmodule LiveKnit.Control do
 
     settings = %Settings{width: 16, image: ["10", "01"], repeat_x: true, repeat_y: true}
 
-    machine = Machine.load(%Machine.Passap{}, settings)
-    {:ok, %State{settings: settings, machine: machine}}
+    state =
+      Machine.load(%Machine.Passap{}, settings)
+      |> handle_machine_response(%State{settings: settings})
+
+    {:ok, state}
   end
 
   def handle_call(:status, _from, state) do
@@ -51,7 +53,7 @@ defmodule LiveKnit.Control do
   end
 
   def handle_call(:reset, _from, state) do
-    {:reply, :ok, reset(state) |> broadcast()}
+    {:reply, :ok, reset(state)}
   end
 
   def handle_call({:set_knitting, flag}, _from, state) do
@@ -61,8 +63,11 @@ defmodule LiveKnit.Control do
   def handle_call({:change_settings, attrs}, _from, state) do
     case Settings.apply(state.settings, attrs) do
       {:ok, settings} ->
-        machine = Machine.load(%Machine.Passap{}, settings)
-        {:reply, :ok, %State{settings: settings, machine: machine} |> broadcast()}
+        state =
+          Machine.load(%Machine.Passap{}, settings)
+          |> handle_machine_response(%State{state | settings: settings})
+
+        {:reply, :ok, state}
 
       {:error, message} ->
         {:reply, {:error, message}, state}
@@ -73,34 +78,16 @@ defmodule LiveKnit.Control do
     {:noreply, state}
   end
 
-  def handle_info({:serial_in, data}, state) do
-    IO.inspect(data, label: "data")
-
+  def handle_info({:serial_in, data}, %State{knitting: true} = state) do
     state =
-      case Machine.interpret_serial(state.machine, data) do
-        :calibration_done ->
-          if state.knitting and state.machine_status == %{} do
-            knit(state)
-          else
-            state
-          end
-
-        :knit_row ->
-          if state.knitting do
-            knit(state)
-          else
-            state
-          end
-
-        :ignore ->
-          state
-      end
+      Machine.interpret_serial(state.machine, data)
+      |> handle_machine_response(state)
 
     {:noreply, state}
   end
 
-  def handle_info(:knit, state) do
-    {:noreply, knit(state)}
+  def handle_info({:serial_in, _data}, state) do
+    {:noreply, state}
   end
 
   def handle_info(message, state) do
@@ -109,27 +96,26 @@ defmodule LiveKnit.Control do
     {:noreply, state}
   end
 
-  defp knit(state) do
-    case Machine.knit(state.machine) do
-      :done ->
-        Logger.warn("- machine done -")
-
-        reset(state)
-
-      {instructions, machine} ->
-        Enum.reduce(instructions, %State{state | machine: machine}, &handle_instruction/2)
-    end
-    |> broadcast()
-  end
-
   defp reset(state) do
+    state =
+      Machine.reset(state.machine)
+      |> handle_machine_response(state)
+
     %State{
       state
       | knitting: false,
-        machine: Machine.reset(state.machine),
-        history: [],
-        machine_status: %{}
+        history: []
     }
+    |> broadcast()
+  end
+
+  defp handle_machine_response(:done, state) do
+    reset(state)
+  end
+
+  defp handle_machine_response({instructions, machine}, state) do
+    Enum.reduce(instructions, %State{state | machine: machine}, &handle_instruction/2)
+    |> broadcast()
   end
 
   defp handle_instruction({:write, data}, state) do
@@ -148,7 +134,7 @@ defmodule LiveKnit.Control do
   end
 
   defp get_status(state) do
-    Map.take(state, ~w(knitting calibrated machine_status history settings)a)
+    Map.take(state, ~w(knitting machine_status history settings)a)
     |> Map.put(:upcoming, Machine.peek(state.machine, 40))
   end
 

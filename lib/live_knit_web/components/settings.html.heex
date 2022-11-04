@@ -6,56 +6,62 @@
 
   <div class="col">
     <div class="mb-3">
-      <div class="row align-items-center">
-        <div class="col">
+      <div class="row align-items-end">
+        <div class="col-8">
           <label for="settingsWidth" class="form-label">Kniting width</label>
-          <input id="settingsWidth" class="form-range" type="range" min="0" max="180" name="width" value={@settings.width}>
+          <input id="settingsWidth" class="form-range" type="range" min="0" max="180" name="width" value={@settings.width} disabled={@disabled}>
         </div>
-        <div class="col"><input class="form-control" type="number" disabled  value={@settings.width}></div>
+        <div class="col">
+          <div class="input-group input-group-sm">
+            <button type="button" class="btn btn-secondary" phx-click="width-minus" disabled={@disabled} phx-target={@myself}>&lt;</button>
+            <input class="form-control text-center" type="number" disabled value={@settings.width} />
+            <button type="button" class="btn btn-secondary" phx-click="width-plus" disabled={@disabled} phx-target={@myself}>&gt;</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="mb-3">
     <label for="settingsImage" class="form-label">Image</label>
-    <textarea class="form-control" name="image" id="settingsImage" rows={min(10, Enum.count(@settings.image))}><%= Enum.join(@settings.image, "\n") %></textarea>
-    <input type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload">
+    <textarea class="form-control" name="image" id="settingsImage" rows={min(10, Enum.count(@settings.image))} disabled={@disabled}><%= Enum.join(@settings.image, "\n") %></textarea>
+    <input disabled={@disabled} type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload">
   </div>
 
 
   <div class="row">
     <div class="col">
       <div class="form-check">
-        <input id="settingsDoubleX" class="form-check-input" type="checkbox" name="double_x" checked={@settings.double_x}>
+        <input disabled={@disabled} id="settingsDoubleX" class="form-check-input" type="checkbox" name="double_x" checked={@settings.double_x}>
         <label for="settingsDoubleX" class="form-check-label">Double X</label>
       </div>
       <div class="form-check">
-        <input id="settingsDoubleY" class="form-check-input" type="checkbox" name="double_y" checked={@settings.double_y}>
+        <input disabled={@disabled} id="settingsDoubleY" class="form-check-input" type="checkbox" name="double_y" checked={@settings.double_y}>
         <label for="settingsDoubleY" class="form-check-label">Double Y</label>
       </div>
     </div>
 
     <div class="col">
       <div class="form-check">
-        <input id="settingsRepeatX" class="form-check-input" type="checkbox" name="repeat_x" checked={@settings.repeat_x}>
+        <input disabled={@disabled} id="settingsRepeatX" class="form-check-input" type="checkbox" name="repeat_x" checked={@settings.repeat_x}>
         <label for="settingsRepeatX" class="form-check-label">Repeat X</label>
       </div>
 
       <div class="form-check">
-        <input id="settingsRepeatY" class="form-check-input" type="checkbox" name="repeat_y" checked={@settings.repeat_y}>
+        <input disabled={@disabled} id="settingsRepeatY" class="form-check-input" type="checkbox" name="repeat_y" checked={@settings.repeat_y}>
         <label for="settingsRepeatY" class="form-check-label">Repeat Y</label>
       </div>
     </div>
 
     <div class="col">
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="fill_color" id="settingsFillColor0" checked={@settings.fill_color == 0} value="0" disabled={@settings.repeat_x}>
+        <input disabled={@disabled || @settings.repeat_x} class="form-check-input" type="radio" name="fill_color" id="settingsFillColor0" checked={@settings.fill_color == 0} value="0">
         <label class="form-check-label" for="settingsFillColor0">
           Color 1
         </label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="fill_color" id="settingsFillColor1" checked={@settings.fill_color == 1} value="1" disabled={@settings.repeat_x}>
+        <input disabled={@disabled || @settings.repeat_x} class="form-check-input" type="radio" name="fill_color" id="settingsFillColor1" checked={@settings.fill_color == 1} value="1">
         <label class="form-check-label" for="settingsFillColor1">
           Color 2
         </label>

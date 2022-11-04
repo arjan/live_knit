@@ -8,9 +8,12 @@ defmodule LiveKnit.Machine.PassapTest do
     rows = Pattern.from_pixels(pixels)
     settings = %Settings{image: rows, width: 8}
 
-    machine = Machine.load(%Machine.Passap{}, settings)
+    assert {instructions, machine} = Machine.load(%Machine.Passap{}, settings)
 
-    assert {instructions, machine} = Machine.knit(machine)
+    assert [{:status, %{left_needle: -4, right_needle: 4, direction: :uncalibrated}}] =
+             instructions
+
+    assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
              {:write, "F:94"},
@@ -66,18 +69,21 @@ defmodule LiveKnit.Machine.PassapTest do
 
   test "infinite repeat" do
     settings = %Settings{image: ["11001100"], repeat_y: true}
-    machine = Machine.load(%Machine.Passap{}, settings)
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
+    assert {_instructions, machine} = Machine.calibrated(machine)
 
     for _ <- 1..100, reduce: machine do
-      machine -> Machine.knit(machine) |> elem(1)
+      machine ->
+        {[_ | _], machine} = Machine.knit(machine)
+        machine
     end
   end
 
   test "pattern repeat" do
     settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 80}
-    machine = Machine.load(%Machine.Passap{}, settings)
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
 
-    assert {instructions, _machine} = Machine.knit(machine)
+    assert {instructions, _machine} = Machine.calibrated(machine)
 
     assert [{:write, "F:130"}, {:write, "P:100100100" <> _}, {:status, _}, {:row, _}] =
              instructions
@@ -85,13 +91,13 @@ defmodule LiveKnit.Machine.PassapTest do
 
   test "peek" do
     settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 80}
-    machine = Machine.load(%Machine.Passap{}, settings)
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
 
     assert ["100100" <> _, "010010" <> _, "001001" <> _, _, _] = Machine.peek(machine, 5)
 
     ##
     settings = %Settings{image: ["100", "010", "001"], repeat_y: false, repeat_x: true, width: 80}
-    machine = Machine.load(%Machine.Passap{}, settings)
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
 
     assert ["100100" <> _, "010010" <> _, "001001" <> _] = Machine.peek(machine, 5)
   end

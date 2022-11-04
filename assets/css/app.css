@@ -1,3 +1,40 @@
+.knitting-area {
+  position: relative;
+}
+.needle {
+  position: absolute;
+  top: 10px;
+  background: #333;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  width: 60px;
+  padding: 0 20px;
+  padding-top: 12px;
+}
+.needle.right {
+  right: 10px;
+}
+.needle.left {
+  left: 10px;
+}
+.needle:after {
+  position: absolute;
+  background: #f8f9fa;
+  width: 55px;
+  height: 10px;
+  content: "";
+  top: 0;
+}
+.needle.right:after {
+  border-bottom-left-radius: 4px;
+  right: 0;
+}
+.needle.left:after {
+  border-bottom-right-radius: 4px;
+  left: 0;
+}
+
 .knitting {
   display: flex;
   flex-direction: column;
@@ -6,20 +43,10 @@
 }
 .knitting .row {
   margin: auto;
-  border-left: 2px solid #ddd;
-  border-right: 2px solid #ddd;
 }
 .knitting .row.current {
   border-top: 2px solid green;
   border-bottom: 2px solid green;
-}
-
-.knitting.future .row:first-child {
-  border-top: 2px solid #ddd;
-}
-
-.knitting.history .row:last-child {
-  border-bottom: 2px solid #ddd;
 }
 
 .knitting .col {
@@ -28,7 +55,14 @@
   width: 20px;
   height: 20px;
 }
-
+.knitting.medium .col {
+  width: 10px;
+  height: 10px;
+}
+.knitting.small .col {
+  width: 6px;
+  height: 6px;
+}
 .color-indicator {
   padding: 2px 12px;
   border-radius: 3px;

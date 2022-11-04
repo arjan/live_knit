@@ -8,18 +8,21 @@ defprotocol LiveKnit.Machine do
           | {:status, %{direction: :ltr | :rtl, color: 0 | 1}}
           | {:row, Pattern.row()}
 
-  @callback load(t(), Settings.t()) :: t()
+  @callback load(t(), Settings.t()) :: {[instruction()], t()}
   def load(machine, settings)
 
-  @callback knit(t()) :: {[instruction()], t()} | :done
-  def knit(machine)
-
-  @callback interpret_serial(t(), binary()) :: :knit_row | :calibration_done | :ignore
+  @callback interpret_serial(t(), binary()) :: {[instruction()], t()}
   def interpret_serial(machine, data)
 
   @callback peek(t(), non_neg_integer()) :: [Pattern.row()]
   def peek(machine, n)
 
-  @callback reset(t()) :: t()
+  @callback reset(t()) :: {[instruction()], t()}
   def reset(machine)
+
+  @callback knit(t()) :: {[instruction()], t()}
+  def knit(machine)
+
+  @callback calibrated(t()) :: {[instruction()], t()}
+  def calibrated(machine)
 end
