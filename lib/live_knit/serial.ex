@@ -34,6 +34,8 @@ defmodule LiveKnit.Serial do
   end
 
   def handle_cast({:write, data}, state) do
+    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:serial_out, data})
+
     Nerves.UART.write(state.pid, data <> "\n\n")
     Nerves.UART.drain(state.pid)
 
@@ -41,7 +43,7 @@ defmodule LiveKnit.Serial do
   end
 
   def handle_info({:nerves_uart, port, data}, %State{port: port} = state) do
-    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:serial, data})
+    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:serial_in, data})
 
     {:noreply, state}
   end

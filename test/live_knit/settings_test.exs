@@ -22,4 +22,11 @@ defmodule LiveKnit.SettingsTest do
     s = %Settings{width: 10, image: ["10"], repeat_x: true, double_x: true, double_y: true}
     assert ["1100110011", "1100110011"] = Settings.to_pattern(s)
   end
+
+  test "apply settings" do
+    assert {:error, "repeat_x is invalid, width is invalid"} =
+             Settings.apply(%Settings{}, %{width: "a", repeat_x: 3})
+
+    assert {:ok, %{width: 4}} = Settings.apply(%Settings{}, %{width: 4})
+  end
 end

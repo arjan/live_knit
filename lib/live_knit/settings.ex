@@ -1,15 +1,43 @@
 defmodule LiveKnit.Settings do
+  use Ecto.Schema
+  import Ecto.Changeset
+
   alias LiveKnit.{Pattern, Settings}
 
   @type t :: %__MODULE__{}
 
-  defstruct width: 20,
-            image: [],
-            repeat_x: false,
-            repeat_y: false,
-            fill_color: 0,
-            double_x: false,
-            double_y: false
+  @derive Jason.Encoder
+  @primary_key false
+  embedded_schema do
+    field(:width, :integer, default: 20)
+    field(:image, {:array, :string}, default: [])
+    field(:fill_color, :integer, default: 0)
+    field(:repeat_x, :boolean, default: false)
+    field(:repeat_y, :boolean, default: false)
+    field(:double_x, :boolean, default: false)
+    field(:double_y, :boolean, default: false)
+  end
+
+  @fields [:width, :image, :fill_color, :repeat_x, :repeat_y, :double_x, :double_y]
+
+  def apply(struct, attrs) do
+    struct
+    |> cast(attrs, @fields)
+    |> apply_action(:update)
+    |> case do
+      {:ok, _} = r ->
+        r
+
+      {:error, cs} ->
+        {:error,
+         Ecto.Changeset.traverse_errors(cs, fn _cs, field, {msg, _opts} ->
+           [to_string(field), " ", msg]
+         end)
+         |> Map.values()
+         |> Enum.intersperse(", ")
+         |> to_string()}
+    end
+  end
 
   @spec to_pattern(t()) :: [Pattern.row()]
   def to_pattern(settings) do

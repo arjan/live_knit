@@ -8,4 +8,9 @@ defmodule LiveKnit.SerialStub do
   def init(_) do
     {:ok, nil}
   end
+
+  def handle_cast({:write, data}, state) do
+    Phoenix.PubSub.broadcast(LiveKnit.PubSub, LiveKnit.Serial.topic(), {:serial_out, data})
+    {:noreply, state}
+  end
 end

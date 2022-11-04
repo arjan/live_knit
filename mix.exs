@@ -36,6 +36,7 @@ defmodule LiveKnit.MixProject do
       {:nerves_uart, "~> 1.2"},
       {:phoenix_pubsub, "~> 2.0"},
       {:pixels, "~> 0.0"},
+      {:ecto, "~> 3.9"},
       {:phoenix, "~> 1.6.15"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
