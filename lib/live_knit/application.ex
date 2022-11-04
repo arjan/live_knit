@@ -8,8 +8,15 @@ defmodule LiveKnit.Application do
   def start(_type, _args) do
     children =
       [
+        # Start the Telemetry supervisor
+        LiveKnitWeb.Telemetry,
+        # Start the PubSub system
         {Phoenix.PubSub, name: LiveKnit.PubSub},
+        # Start the Endpoint (http/https)
+        LiveKnitWeb.Endpoint,
+        # The serial connection
         serial_port(),
+        # Knitting controller
         LiveKnit.Control
       ]
       |> List.flatten()
@@ -39,5 +46,13 @@ defmodule LiveKnit.Application do
     |> Enum.find(fn {_k, v} ->
       String.starts_with?(Map.get(v, :manufacturer, ""), "Arduino")
     end)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  @impl true
+  def config_change(changed, _new, removed) do
+    LiveKnitWeb.Endpoint.config_change(changed, removed)
+    :ok
   end
 end
