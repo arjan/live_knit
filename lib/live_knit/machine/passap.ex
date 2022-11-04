@@ -20,7 +20,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     rows = Settings.to_pattern(settings)
 
     # center the work on the bed
-    first_needle = ceil(@bed_width / 2 + settings.width / 2)
+    first_needle = ceil(@bed_width / 2 - settings.width / 2)
 
     machine = %State{
       state
@@ -79,8 +79,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   defp state_instruction(state) do
     center = div(@bed_width, 2)
-    left_needle = state.first_needle - String.length(List.first(state.data)) - center
-    right_needle = state.first_needle - center
+    right_needle = @bed_width - state.first_needle - center
+    left_needle = right_needle - String.length(List.first(state.data))
 
     {:status,
      %{

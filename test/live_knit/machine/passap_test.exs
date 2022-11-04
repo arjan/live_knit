@@ -16,7 +16,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
-             {:write, "F:94"},
+             {:write, "F:86"},
              {:write, "P:00000000"},
              {:status, %{direction: :rtl, color: 0}},
              {:row, "00000000"}
@@ -37,7 +37,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:94"},
+             {:write, "F:86"},
              {:write, "P:01111110"},
              {:status, %{direction: :rtl, color: 0}},
              {:row, "01111110"}
@@ -85,7 +85,7 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert {instructions, _machine} = Machine.calibrated(machine)
 
-    assert [{:write, "F:130"}, {:write, "P:100100100" <> _}, {:status, _}, {:row, _}] =
+    assert [{:write, "F:50"}, {:write, "P:100100100" <> _}, {:status, _}, {:row, _}] =
              instructions
   end
 

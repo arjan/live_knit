@@ -23,7 +23,7 @@ defmodule LiveKnitWeb.Live.Main do
     with ["data:image/" <> _, data] <- String.split(data_url, ",", parts: 2),
          {:ok, data} <- Base.decode64(data),
          {:ok, pixels} <- Pixels.read(data) do
-      if pixels.width <= status.settings.width do
+      if pixels.width <= status.settings.width * 2 do
         rows = LiveKnit.Pattern.from_pixels(pixels)
         Control.change_settings(%{image: rows})
         {:noreply, socket}
@@ -67,9 +67,15 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket |> assign(:control, status)}
   end
 
+  def handle_info({:serial_in, "C:" <> _}, socket) do
+    {:noreply, socket}
+  end
+
   def handle_info({:serial_in, data}, socket) do
     message = "<-- " <> data
-    {:noreply, socket |> assign(:serial_log, [message | socket.assigns.serial_log])}
+
+    {:noreply,
+     socket |> assign(:serial_log, [message | socket.assigns.serial_log] |> Enum.slice(0, 20))}
   end
 
   def handle_info({:serial_out, data}, socket) do
