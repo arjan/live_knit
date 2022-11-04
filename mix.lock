@@ -1,0 +1,7 @@
+%{
+  "elixir_make": {:hex, :elixir_make, "0.6.3", "bc07d53221216838d79e03a8019d0839786703129599e9619f4ab74c8c096eac", [:mix], [], "hexpm", "f5cbd651c5678bcaabdbb7857658ee106b12509cd976c2c2fca99688e1daf716"},
+  "erlang_serial": {:git, "https://github.com/arjan/erlang-serial.git", "056e4d45ba509f9a51a1046286b8f9795ec1a551", []},
+  "nerves_uart": {:hex, :nerves_uart, "1.2.1", "ae3247e14915f79dde7d4f450ad4c0d4bdc7ab505e3d7c4d4799ac1121e0b505", [:mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "510e400be82fcda486bb48d8026534f84f8e57b4cd27d76772175ef599debd54"},
+  "phoenix_pubsub": {:hex, :phoenix_pubsub, "2.1.1", "ba04e489ef03763bf28a17eb2eaddc2c20c6d217e2150a61e3298b0f4c2012b5", [:mix], [], "hexpm", "81367c6d1eea5878ad726be80808eb5a787a23dee699f96e72b1109c57cdd8d9"},
+  "pixels": {:hex, :pixels, "0.2.1", "fef581b455d95aaabeccf56d78aee4bfb9146837e4be8b3d0ec71ca4fe1175d0", [:make, :mix], [{:elixir_make, "~> 0.6.0", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "b50c267db57933170e2a31611b9b12b1cc52799ee7dc71400d86980c1d6817fe"},
+}
