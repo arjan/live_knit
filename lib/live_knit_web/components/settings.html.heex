@@ -18,7 +18,8 @@
 
   <div class="mb-3">
     <label for="settingsImage" class="form-label">Image</label>
-    <textarea class="form-control" name="image" id="settingsImage" rows={Enum.count(@settings.image)}><%= Enum.join(@settings.image, "\n") %></textarea>
+    <textarea class="form-control" name="image" id="settingsImage" rows={min(10, Enum.count(@settings.image))}><%= Enum.join(@settings.image, "\n") %></textarea>
+    <input type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload">
   </div>
 
 

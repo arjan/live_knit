@@ -87,9 +87,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     |> Enum.slice(0, n)
   end
 
-  def peek(%{repeat: false} = machine, n) do
+  def peek(%{repeat: false} = machine, _n) do
     machine.rows
-    |> Enum.slice(0, n)
   end
 
   @impl true

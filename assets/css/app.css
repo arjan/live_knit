@@ -6,7 +6,22 @@
 }
 .knitting .row {
   margin: auto;
+  border-left: 2px solid #ddd;
+  border-right: 2px solid #ddd;
 }
+.knitting .row.current {
+  border-top: 2px solid green;
+  border-bottom: 2px solid green;
+}
+
+.knitting.future .row:first-child {
+  border-top: 2px solid #ddd;
+}
+
+.knitting.history .row:last-child {
+  border-bottom: 2px solid #ddd;
+}
+
 .knitting .col {
   padding: 0;
   margin: 0;
@@ -28,6 +43,10 @@
   background: #303030;
   color: white;
 }
+.row.current .yarn.color-1 {
+  background: rgba(0, 255, 0, 0.2);
+}
+
 .yarn.color-1 {
   background: #ffffff;
   color: #303030;

@@ -26,11 +26,28 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 //import topbar from "../vendor/topbar"
 
+const hooks = {
+  ImageUpload: {
+    mounted() {
+      document.getElementById("fileUpload").addEventListener("change", (e) => {
+        var reader = new FileReader();
+        reader.onload = () => {
+          this.pushEvent("image-data", reader.result);
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      });
+    },
+  },
+};
+
+console.log("hooks", hooks);
+
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
   params: { _csrf_token: csrfToken },
+  hooks,
 });
 
 // Show progress bar on live navigation and form submits

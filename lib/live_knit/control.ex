@@ -149,7 +149,7 @@ defmodule LiveKnit.Control do
 
   defp get_status(state) do
     Map.take(state, ~w(knitting calibrated machine_status history settings)a)
-    |> Map.put(:upcoming, Machine.peek(state.machine, 20))
+    |> Map.put(:upcoming, Machine.peek(state.machine, 40))
   end
 
   defp broadcast(state) do

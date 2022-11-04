@@ -17,6 +17,26 @@ defmodule LiveKnitWeb.Live.Main do
     {:ok, socket |> assign(:control, status) |> assign(:serial_log, [])}
   end
 
+  def handle_event("image-data", data_url, socket) do
+    status = Control.status()
+
+    with ["data:image/" <> _, data] <- String.split(data_url, ",", parts: 2),
+         {:ok, data} <- Base.decode64(data),
+         {:ok, pixels} <- Pixels.read(data) do
+      if pixels.width <= status.settings.width do
+        rows = LiveKnit.Pattern.from_pixels(pixels)
+        Control.change_settings(%{image: rows})
+        {:noreply, socket}
+      else
+        {:noreply,
+         put_flash(socket, :error, "Image is too large (#{pixels.width}) for knit width")}
+      end
+    else
+      _ ->
+        {:noreply, put_flash(socket, :error, "Error while reading image")}
+    end
+  end
+
   def handle_event("knit-" <> event, _, socket) do
     Control.set_knitting(event == "start")
     {:noreply, socket}
@@ -61,4 +81,8 @@ defmodule LiveKnitWeb.Live.Main do
     message = "--> " <> data
     {:noreply, socket |> assign(:serial_log, [message | socket.assigns.serial_log])}
   end
+
+  def knitting_size_class(n) when n < 48, do: "large"
+  def knitting_size_class(n) when n < 128, do: "medium"
+  def knitting_size_class(_), do: "small"
 end
