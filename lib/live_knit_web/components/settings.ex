@@ -26,15 +26,17 @@ defmodule LiveKnitWeb.Components.Settings do
   end
 
   def handle_event("width-" <> dir, _attrs, socket) do
-    delta =
-      case dir do
-        "plus" -> 1
-        "minus" -> -1
-      end
-
     status = Control.status()
-    change_settings(%{width: status.settings.width + delta}, socket)
+    change_settings(%{width: status.settings.width + dir(dir)}, socket)
   end
+
+  def handle_event("center-" <> dir, _attrs, socket) do
+    status = Control.status()
+    change_settings(%{center: status.settings.center + dir(dir)}, socket)
+  end
+
+  defp dir("plus"), do: 1
+  defp dir("minus"), do: -1
 
   defp change_settings(update, socket) do
     case LiveKnit.Control.change_settings(update) do
@@ -44,5 +46,23 @@ defmodule LiveKnitWeb.Components.Settings do
       {:error, message} ->
         {:noreply, put_flash(socket, :error, message)}
     end
+  end
+
+  def range(assigns) do
+    ~H"""
+      <div class="row align-items-end">
+        <div class="col-8">
+          <label for={@name <> "-range"} class="form-label"><%= @label %></label>
+          <input id={@name <> "-range"} class="form-range" type="range" phx-throttle={200} min={@min} max={@max} name={@name} value={@value} disabled={@disabled}>
+        </div>
+        <div class="col">
+          <div class="input-group input-group-sm">
+            <button type="button" class="btn btn-secondary" phx-click={@name <> "-minus"} disabled={@disabled} phx-target={@target}>&lt;</button>
+            <input class="form-control text-center" type="number" disabled value={@value} />
+            <button type="button" class="btn btn-secondary" phx-click={@name <> "-plus"} disabled={@disabled} phx-target={@target}>&gt;</button>
+          </div>
+        </div>
+      </div>
+    """
   end
 end

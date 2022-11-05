@@ -1,8 +1,14 @@
 defmodule LiveKnit.SerialStub do
   use GenServer
 
+  alias LiveKnit.{PubSub, Serial}
+
   def start_link(_) do
-    GenServer.start_link(__MODULE__, [], name: LiveKnit.Serial)
+    GenServer.start_link(__MODULE__, [], name: Serial)
+  end
+
+  def read(data) do
+    Phoenix.PubSub.broadcast(PubSub, Serial.topic(), {:serial_in, data})
   end
 
   def init(_) do
@@ -10,7 +16,7 @@ defmodule LiveKnit.SerialStub do
   end
 
   def handle_cast({:write, data}, state) do
-    Phoenix.PubSub.broadcast(LiveKnit.PubSub, LiveKnit.Serial.topic(), {:serial_out, data})
+    Phoenix.PubSub.broadcast(PubSub, Serial.topic(), {:serial_out, data})
     {:noreply, state}
   end
 end

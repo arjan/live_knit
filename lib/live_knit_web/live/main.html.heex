@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-8 pt-5 bg-light border knitting-area">
 
-    <div class="needle left"><%= @control.machine_status.left_needle %></div>
+    <div class="needle left"><%= @control.machine_status.left_needle + 1 %></div>
     <div class="needle right"><%= @control.machine_status.right_needle %></div>
 
     <div class={"knitting future #{knitting_size_class(@control.settings.width)}"}>
@@ -12,7 +12,7 @@
 
     <div class={"knitting history #{knitting_size_class(@control.settings.width)}"}>
       <%= for {row, index} <- Enum.with_index(@control.history) do %>
-        <PatternRow.row row={row} current={index == 0} />
+        <PatternRow.row row={row} current={index == 0} status={@control.machine_status} />
       <% end %>
     </div>
   </div>
@@ -49,14 +49,13 @@
       </div>
 
       <div class="col text-end">
-        <button type="button" phx-click="calibrate" class="btn btn-secondary btn-md" disabled={!@control.knitting} title="Calibrated signal">C</button>
-        <button type="button" phx-click="pattern_end" class="btn btn-secondary btn-md" disabled={!@control.knitting} title="Send pattern end">E</button>
         <button type="button" phx-click="reset" class="btn btn-danger btn-md">Reset</button>
       </div>
     </div>
 
-    <.live_component id="settings" module={Settings}
-    settings={@control.settings} disabled={@control.knitting} />
+    <.live_component id="settings" module={Settings} settings={@control.settings} disabled={@control.knitting} />
+
+    <.live_component id="debugging" module={DebugPanel} disabled={!@control.knitting} cursor={@cursor} />
 
     <div class="mb-3 p-3 bg-light border">
       <h5>Data</h5>

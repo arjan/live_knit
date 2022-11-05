@@ -109,4 +109,18 @@ defmodule LiveKnit.Machine.PassapTest do
     {[status: %{position: 90}], _} = Machine.interpret_serial(machine, "C:-2")
     {[status: %{position: 0}], _} = Machine.interpret_serial(machine, "C:178")
   end
+
+  test "knitting positioning" do
+    settings = %Settings{image: ["100", "010", "001"], center: 73, width: 40}
+    {instructions, _} = Machine.load(%Machine.Passap{}, settings)
+
+    assert [{:status, %{left_needle: 50, right_needle: 90, direction: :uncalibrated}}] =
+             instructions
+
+    settings = %Settings{image: ["100", "010", "001"], center: -90, width: 40}
+    {instructions, _} = Machine.load(%Machine.Passap{}, settings)
+
+    assert [{:status, %{left_needle: -90, right_needle: -50, direction: :uncalibrated}}] =
+             instructions
+  end
 end

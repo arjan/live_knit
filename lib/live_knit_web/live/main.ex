@@ -1,20 +1,24 @@
 defmodule LiveKnitWeb.Live.Main do
   use LiveKnitWeb, :live_view
 
-  @poll_interval 500
-
   alias LiveKnit.Control
-  alias LiveKnitWeb.Components.{PatternRow, Settings}
+  alias LiveKnitWeb.Components.{PatternRow, Settings, DebugPanel}
 
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveKnit.PubSub, LiveKnit.Serial.topic())
       Phoenix.PubSub.subscribe(LiveKnit.PubSub, Control.topic())
-      Process.send_after(self(), :poll, @poll_interval)
     end
 
     status = Control.status()
-    {:ok, socket |> assign(:control, status) |> assign(:serial_log, [])}
+
+    socket =
+      socket
+      |> assign(:control, status)
+      |> assign(:serial_log, [])
+      |> assign(:cursor, -2)
+
+    {:ok, socket}
   end
 
   def handle_event("image-data", data_url, socket) do
@@ -47,28 +51,12 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket}
   end
 
-  def handle_event("calibrate", _, socket) do
-    send(Control, {:serial_in, "R:fc"})
-    {:noreply, socket}
-  end
-
-  def handle_event("pattern_end", _, socket) do
-    send(Control, {:serial_in, "E:1"})
-    {:noreply, socket}
-  end
-
-  def handle_info(:poll, socket) do
-    Process.send_after(self(), :poll, @poll_interval)
-    status = Control.status()
-    {:noreply, socket |> assign(:control, status)}
-  end
-
   def handle_info({:status, status}, socket) do
     {:noreply, socket |> assign(:control, status)}
   end
 
-  def handle_info({:serial_in, "C:" <> _}, socket) do
-    {:noreply, socket}
+  def handle_info({:serial_in, "C:" <> c}, socket) do
+    {:noreply, socket |> assign(:cursor, String.to_integer(c))}
   end
 
   def handle_info({:serial_in, data}, socket) do

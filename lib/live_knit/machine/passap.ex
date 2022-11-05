@@ -7,6 +7,12 @@ defmodule LiveKnit.Machine.Passap do
             data: [],
             repeat: false,
             first_needle: 0
+
+  @bed_width 180
+
+  def cursor_to_needle(c) do
+    div(@bed_width - c, 2)
+  end
 end
 
 defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
@@ -21,7 +27,10 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     rows = Settings.to_pattern(settings)
 
     # center the work on the bed
-    first_needle = ceil(@bed_width / 2 - settings.width / 2)
+    bw2 = div(@bed_width, 2)
+    first_needle = ceil(bw2 - settings.width / 2) - settings.center
+    first_needle = max(0, first_needle)
+    first_needle = min(@bed_width - settings.width, first_needle)
 
     machine = %State{
       state
@@ -81,7 +90,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   defp state_instruction(state) do
     center = div(@bed_width, 2)
     right_needle = @bed_width - state.first_needle - center
-    left_needle = right_needle - String.length(List.first(state.data))
+    left_needle = right_needle - String.length(List.first(state.data) || "")
     position = @bed_width - div(state.cursor + 2, 2) - center
 
     {:status,
@@ -120,7 +129,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   @impl true
   def peek(%{repeat: true} = machine, n) do
-    repeats = ceil(n / Enum.count(machine.data))
+    repeats = ceil(n / max(1, Enum.count(machine.data)))
 
     [
       machine.rows,
