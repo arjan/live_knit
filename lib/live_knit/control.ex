@@ -95,15 +95,8 @@ defmodule LiveKnit.Control do
   end
 
   defp reset(state) do
-    state =
-      Machine.reset(state.machine)
-      |> handle_machine_response(state)
-
-    %State{
-      state
-      | knitting: false,
-        history: []
-    }
+    Machine.load(%Machine.Passap{}, state.settings)
+    |> handle_machine_response(%State{state | knitting: false, history: []})
     |> send_state()
   end
 
@@ -123,7 +116,7 @@ defmodule LiveKnit.Control do
   end
 
   defp handle_instruction({:status, status}, state) do
-    Logger.debug("STATUS = #{inspect(status)}")
+    # Logger.debug("STATUS = #{inspect(status)}")
     %State{state | machine_status: status}
   end
 

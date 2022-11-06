@@ -31,8 +31,8 @@
       <h5 class="mb-3">Machine: <%= if @control.knitting do %>Knitting<% else %>Stopped<% end %></h5>
 
       <%= if @control.knitting do %>
-        <div class="row mb-2">
-          <div class="col arrow text-primary">
+        <div class="row mb-2 large-status">
+          <div class="col-6 arrow text-primary">
             <%= if @control.machine_status.direction in [:uncalibrated, :ltr] do %>
               <span>🢂</span>
             <% end %>
@@ -40,10 +40,14 @@
               <span>🢀</span>
             <% end %>
           </div>
-          <div class="col color text-end">
+          <div class="col color text-center">
             <%= if @control.machine_status.direction != :uncalibrated do %>
               <span class={"yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
             <% end %>
+          </div>
+
+          <div class="col remaining text-center">
+            <span><%= @control.machine_status.rows_remaining %></span>
           </div>
         </div>
 
@@ -51,7 +55,7 @@
           Move carriage right for calibration
         <% else %>
           <div class="row">
-            <div class="col">
+            <div class="col-6">
           <%= if @control.machine_status.direction == :rtl do %>
             Moving carriage left
           <% end %>
@@ -59,8 +63,11 @@
             Moving carriage right
           <% end %>
             </div>
-            <div class="col text-end">
+            <div class="col text-center">
               Color
+            </div>
+            <div class="col text-center">
+              Rows left
             </div>
           </div>
         <% end %>

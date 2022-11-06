@@ -40,8 +40,6 @@ const hooks = {
   },
 };
 
-console.log("hooks", hooks);
-
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");

@@ -2,6 +2,7 @@ defmodule LiveKnit.Machine.Passap do
   defstruct cursor: 0,
             direction: :uncalibrated,
             current_pattern: "",
+            rows_remaining: 0,
             rows: [],
             data: [],
             repeat: false,
@@ -37,7 +38,12 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
         rows: rows,
         data: rows,
         repeat: settings.repeat_y,
-        first_needle: first_needle
+        first_needle: first_needle,
+        rows_remaining:
+          case settings.repeat_y do
+            true -> settings.repeat_y_count
+            false -> Enum.count(rows)
+          end
     }
 
     {[state_instruction(machine)], machine}
@@ -48,7 +54,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     {[], state}
   end
 
-  def knit(%State{direction: {:new_row, _}, rows: [], repeat: false} = _state) do
+  def knit(%State{direction: {:new_row, _}, rows_remaining: 0} = _state) do
     :done
   end
 
@@ -63,7 +69,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
       state
       | direction: {:ltr, 0},
         rows: rest,
-        current_pattern: current_pattern
+        current_pattern: current_pattern,
+        rows_remaining: state.rows_remaining - 1
     }
 
     instructions = [
@@ -104,7 +111,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     left_needle = right_needle - String.length(List.first(state.data) || "")
     position = @bed_width - div(state.cursor + 2, 2) - center
 
-    {direction, color} = color_and_direction(state.direction)
+    {direction, color, rows_remaining} =
+      color_and_direction(state.direction, state.rows_remaining)
 
     {:status,
      %{
@@ -112,15 +120,16 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
        color: color,
        position: position,
        left_needle: left_needle,
-       right_needle: right_needle
+       right_needle: right_needle,
+       rows_remaining: rows_remaining
      }}
   end
 
   # state.direction always contains the 'next direction' instead of the current
-  defp color_and_direction({:rtl, col}), do: {:ltr, 1 - col}
-  defp color_and_direction({:ltr, col}), do: {:rtl, col}
-  defp color_and_direction({:new_row, col}), do: {:ltr, col}
-  defp color_and_direction(d), do: {d, 0}
+  defp color_and_direction({:rtl, col}, r), do: {:ltr, 1 - col, r + 1}
+  defp color_and_direction({:ltr, col}, r), do: {:rtl, col, r + 1}
+  defp color_and_direction({:new_row, col}, r), do: {:ltr, col, r}
+  defp color_and_direction(d, r), do: {d, 0, r}
 
   @impl true
   def interpret_serial(machine, "R:fc") do
@@ -148,7 +157,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   @impl true
   def peek(%{repeat: true} = machine, n) do
-    repeats = ceil(n / max(1, Enum.count(machine.data)))
+    n = min(n, machine.rows_remaining)
+    repeats = ceil(n / max(1, Enum.count(machine.data))) + 1
 
     [
       machine.rows,
@@ -170,7 +180,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
       rows: machine.data,
       data: machine.data,
       repeat: machine.repeat,
-      first_needle: machine.first_needle
+      first_needle: machine.first_needle,
+      rows_remaining: Enum.count(machine.data)
     }
 
     {[state_instruction(state)], state}

@@ -18,7 +18,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert [
              {:write, "F:86"},
              {:write, "P:00000000"},
-             {:status, %{direction: :rtl, color: 0}},
+             {:status, %{direction: :rtl, color: 0, rows_remaining: 8}},
              {:row, "00000000"}
            ] = instructions
 
@@ -40,7 +40,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert [
              {:write, "F:86"},
              {:write, "P:01111110"},
-             {:status, %{direction: :rtl, color: 0}},
+             {:status, %{direction: :rtl, color: 0, rows_remaining: 7}},
              {:row, "01111110"}
            ] = instructions
 
@@ -69,7 +69,7 @@ defmodule LiveKnit.Machine.PassapTest do
   end
 
   test "infinite repeat" do
-    settings = %Settings{image: ["11001100"], repeat_y: true}
+    settings = %Settings{image: ["11001100"], repeat_y: true, repeat_y_count: 100_000}
     {_, machine} = Machine.load(%Machine.Passap{}, settings)
     assert {_instructions, machine} = Machine.calibrated(machine)
 
@@ -88,6 +88,33 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert [{:write, "F:50"}, {:write, "P:100100100" <> _}, {:status, _}, {:row, _}] =
              instructions
+  end
+
+  test "pattern repeat w/ remaining" do
+    settings = %Settings{
+      image: ["100", "010", "001"],
+      repeat_y: true,
+      repeat_x: true,
+      width: 80,
+      repeat_y_count: 12
+    }
+
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
+    assert {_instructions, machine} = Machine.calibrated(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+
+    machine =
+      for _ <- 1..(11 * 4), reduce: machine do
+        machine ->
+          {_instructions, machine} = Machine.knit(machine)
+          machine
+      end
+
+    # now we are done
+
+    assert :done = Machine.knit(machine)
   end
 
   test "peek" do

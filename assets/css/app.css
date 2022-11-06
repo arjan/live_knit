@@ -67,15 +67,21 @@
   height: 6px;
 }
 
-.col.arrow > span,
-.col.color > span {
+.large-status > div > span {
   padding: 2px 12px;
   border-radius: 3px;
   border: 1px solid #303030;
   font-size: 3em;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
 }
 
-.col.arrow > span {
+.large-status .remaining > span {
+  border-width: 2px;
+  border-color: white;
+}
+.large-status .arrow > span {
   border: 0;
   background: white;
 }

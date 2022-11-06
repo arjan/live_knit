@@ -25,10 +25,8 @@ defmodule LiveKnitWeb.Components.Settings do
     change_settings(update, socket)
   end
 
-  def handle_event("width-" <> dir, _attrs, socket) do
-    status = Control.status()
-    change_settings(%{width: status.settings.width + dir(dir)}, socket)
-  end
+  def handle_event("inc-" <> attr, _attrs, socket), do: incdec(attr, 1, socket)
+  def handle_event("dec-" <> attr, _attrs, socket), do: incdec(attr, -1, socket)
 
   def handle_event("center-" <> dir, _attrs, socket) do
     status = Control.status()
@@ -57,12 +55,18 @@ defmodule LiveKnitWeb.Components.Settings do
         </div>
         <div class="col">
           <div class="input-group input-group-sm">
-            <button type="button" class="btn btn-secondary" phx-click={@name <> "-minus"} disabled={@disabled} phx-target={@target}>&lt;</button>
+            <button type="button" class="btn btn-secondary" phx-click={"dec-" <> @name} disabled={@disabled} phx-target={@target}>&lt;</button>
             <input class="form-control text-center" type="number" disabled value={@value} />
-            <button type="button" class="btn btn-secondary" phx-click={@name <> "-plus"} disabled={@disabled} phx-target={@target}>&gt;</button>
+            <button type="button" class="btn btn-secondary" phx-click={"inc-" <> @name} disabled={@disabled} phx-target={@target}>&gt;</button>
           </div>
         </div>
       </div>
     """
+  end
+
+  defp incdec(attr, delta, socket) do
+    attr = String.to_existing_atom(attr)
+    status = Control.status()
+    change_settings(%{attr => Map.get(status.settings, attr) + delta}, socket)
   end
 end

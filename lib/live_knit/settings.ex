@@ -14,13 +14,24 @@ defmodule LiveKnit.Settings do
     field(:fill_color, :integer, default: 0)
     field(:repeat_x, :boolean, default: false)
     field(:repeat_y, :boolean, default: false)
+    field(:repeat_y_count, :integer, default: 20)
     field(:double_x, :boolean, default: false)
     field(:double_y, :boolean, default: false)
     # around which needle on the bed to knit
     field(:center, :integer, default: 0)
   end
 
-  @fields [:width, :image, :fill_color, :repeat_x, :repeat_y, :double_x, :double_y, :center]
+  @fields [
+    :width,
+    :image,
+    :fill_color,
+    :repeat_x,
+    :repeat_y,
+    :repeat_y_count,
+    :double_x,
+    :double_y,
+    :center
+  ]
 
   def apply(struct, attrs) do
     struct

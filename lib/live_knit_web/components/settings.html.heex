@@ -57,6 +57,12 @@
       </div>
     </div>
 
+    <%= if @settings.repeat_y do %>
+      <div class="mb-3">
+        <.range label="Nr of rows to repeat" min={0} max={200} value={@settings.repeat_y_count} disabled={@disabled} target={@myself} name="repeat_y_count" />
+      </div>
+    <% end %>
+
     <div>
       <.range label="Knitting position " min={-90} max={90} value={@settings.center} disabled={@disabled} target={@myself} name="center" />
     </div>
