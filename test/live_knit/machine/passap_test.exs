@@ -23,6 +23,7 @@ defmodule LiveKnit.Machine.PassapTest do
            ] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
+
     assert [{:status, %{direction: :ltr, color: 0}}] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)

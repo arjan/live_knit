@@ -12,7 +12,7 @@
 
     <div class={"knitting history #{knitting_size_class(@control.settings.width)}"}>
       <%= for {row, index} <- Enum.with_index(@control.history) do %>
-        <PatternRow.row row={row} current={index == 0} status={@control.machine_status} />
+        <PatternRow.row row={row} current={index == 0} />
       <% end %>
     </div>
   </div>

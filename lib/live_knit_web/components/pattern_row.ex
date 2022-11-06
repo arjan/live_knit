@@ -5,7 +5,7 @@ defmodule LiveKnitWeb.Components.PatternRow do
     ~H"""
     <div class={"row #{current(assigns[:current])}"}>
     <%= for {col, index} <- Enum.with_index(String.split(@row, "", trim: true)) do %>
-    <div class={"col yarn color-#{col} #{assigns[:current] && highlight_cursor(@status, index)}"}></div>
+    <div class={"col yarn color-#{col} #{assigns[:current] && assigns[:status] && highlight_cursor(@status, index)}"}></div>
     <% end %>
     </div>
     """

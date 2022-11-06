@@ -40,6 +40,12 @@ defmodule LiveKnit.Serial do
     {:noreply, state}
   end
 
+  def handle_info({:nerves_uart, port, {:error, reason}}, %State{port: port} = state) do
+    Logger.error("Serial error: #{inspect(reason)}")
+
+    {:stop, :normal, state}
+  end
+
   def handle_info({:nerves_uart, port, data}, %State{port: port} = state) do
     broadcast({:serial_in, data})
 

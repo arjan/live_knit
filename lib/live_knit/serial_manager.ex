@@ -64,6 +64,7 @@ defmodule LiveKnit.SerialManager do
 
       {port, _metadata} ->
         Logger.warn("Found Arduino at #{port}")
+        Process.sleep(1000)
 
         if state.stub_pid != nil do
           GenServer.stop(state.stub_pid)
