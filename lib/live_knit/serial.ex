@@ -1,14 +1,12 @@
 defmodule LiveKnit.Serial do
   use GenServer
+  use LiveKnit.Broadcaster, "serial_data"
 
   require Logger
 
   def start_link(port) do
     GenServer.start_link(__MODULE__, port, name: __MODULE__)
   end
-
-  @topic "serial_data"
-  def topic(), do: @topic
 
   def write(data) do
     GenServer.cast(__MODULE__, {:write, data})
@@ -34,7 +32,7 @@ defmodule LiveKnit.Serial do
   end
 
   def handle_cast({:write, data}, state) do
-    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:serial_out, data})
+    broadcast({:serial_out, data})
 
     Nerves.UART.write(state.pid, data <> "\n\n")
     Nerves.UART.drain(state.pid)
@@ -43,7 +41,7 @@ defmodule LiveKnit.Serial do
   end
 
   def handle_info({:nerves_uart, port, data}, %State{port: port} = state) do
-    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:serial_in, data})
+    broadcast({:serial_in, data})
 
     {:noreply, state}
   end

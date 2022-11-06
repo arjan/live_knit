@@ -19,22 +19,50 @@
 
   <div class="col">
 
+    <div class="md-3">
+      <%= if @serial_status.connected do %>
+        <p>Connected to machine at <%= @serial_status.port %></p>
+      <% else %>
+        <p class="text-danger">Not connected to machine!</p>
+      <% end %>
+    </div>
+
     <div class={"mb-3 p-3 border #{@control.knitting && "bg-success text-bg-success" || "bg-light"}"}>
-      <h5>Machine: <%= if @control.knitting do %>Knitting<% else %>Stopped<% end %></h5>
+      <h5 class="mb-3">Machine: <%= if @control.knitting do %>Knitting<% else %>Stopped<% end %></h5>
 
       <%= if @control.knitting do %>
-        <%= if @control.machine_status.direction == :uncalibrated do %>
-          <h1>🢂</h1> Move carriage left for calibration
-        <% else %>
+        <div class="row mb-2">
+          <div class="col arrow text-primary">
+            <%= if @control.machine_status.direction in [:uncalibrated, :ltr] do %>
+              <span>🢂</span>
+            <% end %>
+            <%= if @control.machine_status.direction in [:rtl] do %>
+              <span>🢀</span>
+            <% end %>
+          </div>
+          <div class="col color text-end">
+            <%= if @control.machine_status.direction != :uncalibrated do %>
+              <span class={"yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
+            <% end %>
+          </div>
+        </div>
 
+        <%= if @control.machine_status.direction == :uncalibrated do %>
+          Move carriage right for calibration
+        <% else %>
+          <div class="row">
+            <div class="col">
           <%= if @control.machine_status.direction == :rtl do %>
-            <h1>🢀</h1> Moving left,
+            Moving carriage left
           <% end %>
           <%= if @control.machine_status.direction == :ltr do %>
-            <h1>🢂</h1> Moving right,
+            Moving carriage right
           <% end %>
-          color:
-          <span class={"color-indicator yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
+            </div>
+            <div class="col text-end">
+              Color
+            </div>
+          </div>
         <% end %>
       <% else %>
         Please set the pattern and press 'start'.

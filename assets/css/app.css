@@ -66,10 +66,18 @@
   width: 6px;
   height: 6px;
 }
-.color-indicator {
+
+.col.arrow > span,
+.col.color > span {
   padding: 2px 12px;
   border-radius: 3px;
   border: 1px solid #303030;
+  font-size: 3em;
+}
+
+.col.arrow > span {
+  border: 0;
+  background: white;
 }
 
 .yarn {

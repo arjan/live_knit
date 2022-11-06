@@ -1,20 +1,20 @@
 defmodule LiveKnitWeb.Live.Main do
   use LiveKnitWeb, :live_view
 
-  alias LiveKnit.Control
+  alias LiveKnit.{Control, Serial, SerialManager}
   alias LiveKnitWeb.Components.{PatternRow, Settings, DebugPanel}
 
   def mount(_params, _session, socket) do
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(LiveKnit.PubSub, LiveKnit.Serial.topic())
-      Phoenix.PubSub.subscribe(LiveKnit.PubSub, Control.topic())
+      Serial.subscribe()
+      SerialManager.subscribe()
+      Control.subscribe()
     end
-
-    status = Control.status()
 
     socket =
       socket
-      |> assign(:control, status)
+      |> assign(:control, Control.status())
+      |> assign(:serial_status, SerialManager.status())
       |> assign(:serial_log, [])
       |> assign(:cursor, -2)
 
@@ -53,6 +53,10 @@ defmodule LiveKnitWeb.Live.Main do
 
   def handle_info({:status, status}, socket) do
     {:noreply, socket |> assign(:control, status)}
+  end
+
+  def handle_info({:serial_status, status}, socket) do
+    {:noreply, socket |> assign(:serial_status, status)}
   end
 
   def handle_info({:serial_in, "C:" <> c}, socket) do

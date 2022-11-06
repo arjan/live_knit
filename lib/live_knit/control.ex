@@ -1,12 +1,10 @@
 defmodule LiveKnit.Control do
   use GenServer
+  use LiveKnit.Broadcaster, "control"
 
   require Logger
 
   alias LiveKnit.{Serial, Machine, Settings}
-
-  @topic "control"
-  def topic(), do: @topic
 
   defstruct machine: nil,
             knitting: false,
@@ -37,7 +35,7 @@ defmodule LiveKnit.Control do
   end
 
   def init(_) do
-    Phoenix.PubSub.subscribe(LiveKnit.PubSub, Serial.topic())
+    LiveKnit.Serial.subscribe()
 
     settings = %Settings{width: 16, image: ["10", "01"], repeat_x: true, repeat_y: true}
 
@@ -57,7 +55,7 @@ defmodule LiveKnit.Control do
   end
 
   def handle_call({:set_knitting, flag}, _from, state) do
-    {:reply, :ok, %State{state | knitting: flag} |> broadcast()}
+    {:reply, :ok, %State{state | knitting: flag} |> send_state()}
   end
 
   def handle_call({:change_settings, attrs}, _from, state) do
@@ -106,7 +104,7 @@ defmodule LiveKnit.Control do
       | knitting: false,
         history: []
     }
-    |> broadcast()
+    |> send_state()
   end
 
   defp handle_machine_response(:done, state) do
@@ -115,7 +113,7 @@ defmodule LiveKnit.Control do
 
   defp handle_machine_response({instructions, machine}, state) do
     Enum.reduce(instructions, %State{state | machine: machine}, &handle_instruction/2)
-    |> broadcast()
+    |> send_state()
   end
 
   defp handle_instruction({:write, data}, state) do
@@ -138,8 +136,8 @@ defmodule LiveKnit.Control do
     |> Map.put(:upcoming, Machine.peek(state.machine, 40))
   end
 
-  defp broadcast(state) do
-    Phoenix.PubSub.broadcast(LiveKnit.PubSub, @topic, {:status, get_status(state)})
+  defp send_state(state) do
+    broadcast({:status, get_status(state)})
 
     state
   end
