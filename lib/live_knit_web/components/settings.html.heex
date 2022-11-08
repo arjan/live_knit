@@ -6,16 +6,31 @@
     <p class="alert alert-danger" role="alert" phx-target={@myself} phx-click="lv:clear-flash" phx-value-key="error" ><%= live_flash(@flash, :error) %></p>
 
 
-    <div class="mb-3">
+    <div class="row mb-3">
       <.range label="Knitting width" min={1} max={180} value={@settings.width} disabled={@disabled} target={@myself} name="width" />
+      <.range label="Knitting position " min={-90} max={90} value={@settings.center} disabled={@disabled} target={@myself} name="center" />
     </div>
+  </div>
 
-    <div class="mb-3">
+  <% single = @settings.colors == 1 %>
+
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <a href="javascript:;" class={single && "nav-link active" || "nav-link"} phx-click="mode-single">Single color</a>
+    </li>
+    <li class="nav-item">
+      <a href="javascript:;" class={!single && "nav-link active" || "nav-link"} phx-click="mode-pattern">Pattern</a>
+    </li>
+  </ul>
+
+  <div class="mb-3">
+    <%= if @settings.colors > 1 do %>
+
+      <div class="mb-3">
       <label for="settingsImage" class="form-label">Image</label>
       <textarea class="form-control" name="image" id="settingsImage" rows={min(10, Enum.count(@settings.image))} disabled={@disabled}><%= Enum.join(@settings.image, "\n") %></textarea>
       <input disabled={@disabled} type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload">
     </div>
-
 
     <div class="row mb-3">
       <div class="col">
@@ -57,16 +72,16 @@
       </div>
     </div>
 
+    <% end %>
+
     <%= if @settings.repeat_y do %>
-      <div class="mb-3">
+      <div class="col-6">
         <.range label="Nr of rows to repeat" min={0} max={200} value={@settings.repeat_y_count} disabled={@disabled} target={@myself} name="repeat_y_count" />
       </div>
     <% end %>
 
-    <div>
-      <.range label="Knitting position " min={-90} max={90} value={@settings.center} disabled={@disabled} target={@myself} name="center" />
-    </div>
-
   </div>
+
+
   </.form>
 </div>

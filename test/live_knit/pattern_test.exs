@@ -9,7 +9,12 @@ defmodule LiveKnit.PatternTest do
     assert ["00000000" | _] = Pattern.from_pixels(pixels)
   end
 
-  test "invert_row" do
-    assert "00101001" == Pattern.invert_row("11010110")
+  test "select_color" do
+    assert "1000" == Pattern.select_color("0123", 0)
+
+    assert "0010" == Pattern.select_color("2201", 0)
+    assert "0001" == Pattern.select_color("2201", 1)
+    assert "1100" == Pattern.select_color("2201", 2)
+    assert "0000" == Pattern.select_color("2201", 3)
   end
 end

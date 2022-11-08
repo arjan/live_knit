@@ -9,6 +9,7 @@ defmodule LiveKnit.Settings do
   @derive Jason.Encoder
   @primary_key false
   embedded_schema do
+    field(:colors, :integer, default: 2)
     field(:width, :integer, default: 20)
     field(:image, {:array, :string}, default: [])
     field(:fill_color, :integer, default: 0)
@@ -22,6 +23,7 @@ defmodule LiveKnit.Settings do
   end
 
   @fields [
+    :colors,
     :width,
     :image,
     :fill_color,
@@ -38,6 +40,7 @@ defmodule LiveKnit.Settings do
     |> cast(attrs, @fields)
     |> validate_number(:width, greater_than_or_equal_to: 1, less_than_or_equal_to: 180)
     |> validate_number(:center, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
+    |> validate_inclusion(:colors, [1, 2, 3, 4])
     |> apply_action(:update)
     |> case do
       {:ok, _} = r ->

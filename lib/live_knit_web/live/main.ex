@@ -45,6 +45,11 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket}
   end
 
+  def handle_event("mode-" <> event, _, socket) do
+    Control.set_single_color(event == "single")
+    {:noreply, socket}
+  end
+
   def handle_event("reset", _, socket) do
     Control.reset()
     {:noreply, socket}

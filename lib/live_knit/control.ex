@@ -7,8 +7,10 @@ defmodule LiveKnit.Control do
   alias LiveKnit.{Serial, Machine, Settings}
 
   defstruct machine: nil,
+            single_color: false,
             knitting: false,
-            settings: %Settings{},
+            pattern_settings: %Settings{},
+            machine_settings: %Settings{},
             machine_status: %{},
             history: []
 
@@ -26,6 +28,10 @@ defmodule LiveKnit.Control do
     GenServer.call(__MODULE__, {:set_knitting, flag})
   end
 
+  def set_single_color(flag) do
+    GenServer.call(__MODULE__, {:set_single_color, flag})
+  end
+
   def change_settings(attrs) do
     GenServer.call(__MODULE__, {:change_settings, attrs})
   end
@@ -38,12 +44,7 @@ defmodule LiveKnit.Control do
     LiveKnit.Serial.subscribe()
 
     settings = %Settings{width: 16, image: ["10", "01"], repeat_x: true, repeat_y: true}
-
-    state =
-      Machine.load(%Machine.Passap{}, settings)
-      |> handle_machine_response(%State{settings: settings})
-
-    {:ok, state}
+    {:ok, apply_pattern_settings(%State{}, settings)}
   end
 
   def handle_call(:status, _from, state) do
@@ -58,12 +59,36 @@ defmodule LiveKnit.Control do
     {:reply, :ok, %State{state | knitting: flag} |> send_state()}
   end
 
-  def handle_call({:change_settings, attrs}, _from, state) do
-    case Settings.apply(state.settings, attrs) do
-      {:ok, settings} ->
-        state =
+  def handle_call({:set_single_color, flag}, _from, state) do
+    state =
+      case flag do
+        true ->
+          settings = %{
+            state.machine_settings
+            | colors: 1,
+              image: ["0"],
+              repeat_x: true,
+              repeat_y: true
+          }
+
           Machine.load(%Machine.Passap{}, settings)
-          |> handle_machine_response(%State{state | settings: settings})
+          |> handle_machine_response(%State{
+            state
+            | single_color: true,
+              machine_settings: settings
+          })
+
+        false ->
+          apply_pattern_settings(state, state.pattern_settings)
+      end
+
+    {:reply, :ok, state |> send_state()}
+  end
+
+  def handle_call({:change_settings, attrs}, _from, state) do
+    case Settings.apply(state.pattern_settings, attrs) do
+      {:ok, settings} ->
+        state = apply_pattern_settings(state, settings)
 
         {:reply, :ok, state}
 
@@ -95,9 +120,18 @@ defmodule LiveKnit.Control do
   end
 
   defp reset(state) do
-    Machine.load(%Machine.Passap{}, state.settings)
+    Machine.load(%Machine.Passap{}, state.machine_settings)
     |> handle_machine_response(%State{state | knitting: false, history: []})
     |> send_state()
+  end
+
+  defp apply_pattern_settings(state, settings) do
+    Machine.load(%Machine.Passap{}, settings)
+    |> handle_machine_response(%State{
+      state
+      | pattern_settings: settings,
+        machine_settings: settings
+    })
   end
 
   defp handle_machine_response(:done, state) do
@@ -125,8 +159,16 @@ defmodule LiveKnit.Control do
   end
 
   defp get_status(state) do
-    Map.take(state, ~w(knitting machine_status history settings)a)
+    Map.take(state, ~w(knitting single_color machine_status history)a)
     |> Map.put(:upcoming, Machine.peek(state.machine, 40))
+    |> Map.put(
+      :settings,
+      case state.single_color do
+        true -> state.machine_settings
+        false -> state.pattern_settings
+      end
+    )
+    |> IO.inspect(label: "s")
   end
 
   defp send_state(state) do

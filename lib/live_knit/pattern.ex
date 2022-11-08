@@ -29,18 +29,20 @@ defmodule LiveKnit.Pattern do
     split_into_rows(rest, width, [row | acc])
   end
 
-  @spec invert_row(row()) :: row()
-  def invert_row(row) do
-    invert_row(row, <<>>)
+  @spec select_color(row(), non_neg_integer) :: row()
+  def select_color(row, color) do
+    select_color(row, color, <<>>)
   end
 
-  defp invert_row(<<>>, acc), do: acc
+  defp select_color(<<>>, _color, acc), do: acc
 
-  defp invert_row(<<?1, rest::binary>>, acc) do
-    invert_row(rest, <<acc::binary, ?0>>)
+  for n <- 0..3 do
+    defp select_color(<<unquote(48 + n)::size(8), rest::binary>>, unquote(n), acc) do
+      select_color(rest, unquote(n), <<acc::binary, ?1>>)
+    end
   end
 
-  defp invert_row(<<?0, rest::binary>>, acc) do
-    invert_row(rest, <<acc::binary, ?1>>)
+  defp select_color(<<_::size(8), rest::binary>>, color, acc) do
+    select_color(rest, color, <<acc::binary, ?0>>)
   end
 end
