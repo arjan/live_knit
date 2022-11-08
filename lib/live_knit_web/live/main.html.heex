@@ -84,7 +84,7 @@
 
         <%= if @control.knitting do %>
           <%= if !@control.machine_status.motor_on do %>
-            <button type="button" class="btn btn-success btn-md" phx-click="motor-1">Motor on</button>
+            <button type="button" class="btn btn-success btn-md" phx-click="motor-1" disabled={@control.machine_status.direction == :uncalibrated}>Motor on</button>
           <% else %>
             <button type="button" class="btn btn-danger btn-md" phx-click="motor-0">Motor off</button>
           <% end %>

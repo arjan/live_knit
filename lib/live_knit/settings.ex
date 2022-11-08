@@ -19,7 +19,7 @@ defmodule LiveKnit.Settings do
     field(:double_x, :boolean, default: false)
     field(:double_y, :boolean, default: false)
     # around which needle on the bed to knit
-    field(:center, :integer, default: 0)
+    field(:center, :integer, default: 62)
   end
 
   @fields [

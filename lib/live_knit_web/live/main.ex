@@ -42,6 +42,11 @@ defmodule LiveKnitWeb.Live.Main do
 
   def handle_event("knit-" <> event, _, socket) do
     Control.set_knitting(event == "start")
+
+    if socket.assigns.control.machine_status.motor_on do
+      Serial.write("M:0")
+    end
+
     {:noreply, socket}
   end
 
@@ -66,6 +71,10 @@ defmodule LiveKnitWeb.Live.Main do
 
   def handle_info({:serial_status, status}, socket) do
     {:noreply, socket |> assign(:serial_status, status)}
+  end
+
+  def handle_info({:serial_in, "C:" <> _}, socket) do
+    {:noreply, socket}
   end
 
   def handle_info({:serial_in, data}, socket) do
