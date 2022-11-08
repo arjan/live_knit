@@ -169,7 +169,6 @@ defmodule LiveKnit.Control do
         false -> state.pattern_settings
       end
     )
-    |> IO.inspect(label: "s")
   end
 
   defp send_state(state) do
