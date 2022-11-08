@@ -6,11 +6,6 @@ defmodule LiveKnitWeb.Components.DebugPanel do
     {:ok, socket}
   end
 
-  def handle_event("form-change", %{"cursor" => value}, socket) do
-    LiveKnit.SerialStub.read("C:" <> value)
-    {:noreply, socket}
-  end
-
   def handle_event("form-change", _attrs, socket) do
     {:noreply, socket}
   end
@@ -29,6 +24,4 @@ defmodule LiveKnitWeb.Components.DebugPanel do
     LiveKnit.SerialStub.read("E:1")
     {:noreply, socket}
   end
-
-  defdelegate cursor_to_needle(c), to: LiveKnit.Machine.Passap
 end

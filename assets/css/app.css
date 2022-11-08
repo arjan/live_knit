@@ -49,9 +49,6 @@
   border-bottom: 2px solid green;
 }
 
-.knitting .col.cursor {
-  background: red !important;
-}
 .knitting .col {
   padding: 0;
   margin: 0;

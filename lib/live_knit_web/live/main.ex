@@ -16,7 +16,6 @@ defmodule LiveKnitWeb.Live.Main do
       |> assign(:control, Control.status())
       |> assign(:serial_status, SerialManager.status())
       |> assign(:serial_log, [])
-      |> assign(:cursor, -2)
 
     {:ok, socket}
   end
@@ -57,10 +56,6 @@ defmodule LiveKnitWeb.Live.Main do
 
   def handle_info({:serial_status, status}, socket) do
     {:noreply, socket |> assign(:serial_status, status)}
-  end
-
-  def handle_info({:serial_in, "C:" <> c}, socket) do
-    {:noreply, socket |> assign(:cursor, String.to_integer(c))}
   end
 
   def handle_info({:serial_in, data}, socket) do

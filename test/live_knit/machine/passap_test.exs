@@ -130,14 +130,6 @@ defmodule LiveKnit.Machine.PassapTest do
     assert ["100100" <> _, "010010" <> _, "001001" <> _] = Machine.peek(machine, 5)
   end
 
-  test "serial" do
-    settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 40}
-    {_, machine} = Machine.load(%Machine.Passap{}, settings)
-
-    {[status: %{position: 90}], _} = Machine.interpret_serial(machine, "C:-2")
-    {[status: %{position: 0}], _} = Machine.interpret_serial(machine, "C:178")
-  end
-
   test "knitting positioning" do
     settings = %Settings{image: ["100", "010", "001"], center: 73, width: 40}
     {instructions, _} = Machine.load(%Machine.Passap{}, settings)

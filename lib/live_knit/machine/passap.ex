@@ -1,18 +1,11 @@
 defmodule LiveKnit.Machine.Passap do
-  defstruct cursor: 0,
-            direction: :uncalibrated,
+  defstruct direction: :uncalibrated,
             current_pattern: "",
             rows_remaining: 0,
             rows: [],
             data: [],
             repeat: false,
             first_needle: 0
-
-  @bed_width 180
-
-  def cursor_to_needle(c) do
-    div(@bed_width - c, 2)
-  end
 end
 
 defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
@@ -109,7 +102,6 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     center = div(@bed_width, 2)
     right_needle = @bed_width - state.first_needle - center
     left_needle = right_needle - String.length(List.first(state.data) || "")
-    position = @bed_width - div(state.cursor + 2, 2) - center
 
     {direction, color, rows_remaining} =
       color_and_direction(state.direction, state.rows_remaining)
@@ -118,7 +110,6 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
      %{
        direction: direction,
        color: color,
-       position: position,
        left_needle: left_needle,
        right_needle: right_needle,
        rows_remaining: rows_remaining
@@ -138,17 +129,6 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   def interpret_serial(machine, "E:1") do
     knit(machine)
-  end
-
-  def interpret_serial(machine, "C:" <> n) do
-    case Integer.parse(n) do
-      {cursor, _} ->
-        machine = %State{machine | cursor: cursor}
-        {[state_instruction(machine)], machine}
-
-      :error ->
-        {[], machine}
-    end
   end
 
   def interpret_serial(machine, _data) do

@@ -8,16 +8,10 @@
 
   <%= if @debug do %>
     <div class="row p-3 bg-light border mb-3 align-items-end">
-
-      <div class="col-9">
-        <label for="cursor" class="form-label">Knit position: <span class="badge bg-secondary"><%= cursor_to_needle(@cursor) %></span></label>
-        <input id="cursor" class="form-range" type="range" min={-2} max={360} value={@cursor} disabled={@disabled} name="cursor" style="direction: rtl" phx-throttle={100}>
-      </div>
       <div class="col">
         <button type="button" phx-click="calibrate" class="btn btn-secondary btn-md" disabled={@disabled} title="Calibrated signal" phx-target={@myself}>C</button>
         <button type="button" phx-click="pattern_end" class="btn btn-secondary btn-md" disabled={@disabled} title="Send pattern end" phx-target={@myself}>E</button>
       </div>
-
     </div>
   <% end %>
 
