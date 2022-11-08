@@ -5,9 +5,15 @@ defmodule LiveKnitWeb.Components.Settings do
 
   def handle_event("save", attrs, socket) do
     default_bools =
-      Map.from_struct(socket.assigns.settings)
-      |> Enum.filter(&is_boolean(elem(&1, 1)))
-      |> Enum.map(fn {k, _} -> {to_string(k), false} end)
+      case socket.assigns.settings.colors > 1 do
+        true ->
+          Map.from_struct(socket.assigns.settings)
+          |> Enum.filter(&is_boolean(elem(&1, 1)))
+          |> Enum.map(fn {k, _} -> {to_string(k), false} end)
+
+        false ->
+          []
+      end
 
     update =
       Map.new(

@@ -10,7 +10,7 @@ defmodule LiveKnit.Control do
             single_color: false,
             knitting: false,
             pattern_settings: %Settings{},
-            machine_settings: %Settings{},
+            single_color_settings: %Settings{},
             machine_status: %{},
             history: []
 
@@ -43,8 +43,16 @@ defmodule LiveKnit.Control do
   def init(_) do
     LiveKnit.Serial.subscribe()
 
-    settings = %Settings{width: 16, image: ["10", "01"], repeat_x: true, repeat_y: true}
-    {:ok, apply_pattern_settings(%State{}, settings)}
+    single_color_settings = %Settings{colors: 1, image: ["0"], repeat_x: true, repeat_y: true}
+    pattern_settings = %Settings{image: ["10", "01"], repeat_x: true, repeat_y: true}
+
+    state = %State{
+      single_color: false,
+      single_color_settings: single_color_settings,
+      pattern_settings: pattern_settings
+    }
+
+    {:ok, apply_settings(state)}
   end
 
   def handle_call(:status, _from, state) do
@@ -60,37 +68,37 @@ defmodule LiveKnit.Control do
   end
 
   def handle_call({:set_single_color, flag}, _from, state) do
-    state =
-      case flag do
-        true ->
-          settings = %{
-            state.machine_settings
-            | colors: 1,
-              image: ["0"],
-              repeat_x: true,
-              repeat_y: true
-          }
-
-          Machine.load(%Machine.Passap{}, settings)
-          |> handle_machine_response(%State{
-            state
-            | single_color: true,
-              machine_settings: settings
-          })
-
-        false ->
-          apply_pattern_settings(state, state.pattern_settings)
-      end
-
+    state = %State{state | single_color: flag} |> apply_settings()
     {:reply, :ok, state |> send_state()}
   end
 
-  def handle_call({:change_settings, attrs}, _from, state) do
-    case Settings.apply(state.pattern_settings, attrs) do
-      {:ok, settings} ->
-        state = apply_pattern_settings(state, settings)
+  @shared_settings [:width, :center]
 
-        {:reply, :ok, state}
+  def handle_call({:change_settings, attrs}, _from, state) do
+    single_color = state.single_color
+
+    case Settings.apply(current_settings(state), attrs) do
+      {:ok, settings} when single_color ->
+        shared = Map.take(settings, @shared_settings)
+
+        state = %State{
+          state
+          | single_color_settings: settings,
+            pattern_settings: Map.merge(state.pattern_settings, shared)
+        }
+
+        {:reply, :ok, apply_settings(state) |> send_state()}
+
+      {:ok, settings} ->
+        shared = Map.take(settings, @shared_settings)
+
+        state = %State{
+          state
+          | pattern_settings: settings,
+            single_color_settings: Map.merge(state.single_color_settings, shared)
+        }
+
+        {:reply, :ok, apply_settings(state) |> send_state()}
 
       {:error, message} ->
         {:reply, {:error, message}, state}
@@ -119,20 +127,18 @@ defmodule LiveKnit.Control do
     {:noreply, state}
   end
 
+  defp current_settings(%State{single_color: true} = state), do: state.single_color_settings
+  defp current_settings(%State{single_color: false} = state), do: state.pattern_settings
+
   defp reset(state) do
-    Machine.load(%Machine.Passap{}, state.machine_settings)
+    Machine.load(%Machine.Passap{}, current_settings(state))
     |> handle_machine_response(%State{state | knitting: false, history: []})
     |> send_state()
   end
 
-  defp apply_pattern_settings(state, settings) do
-    Machine.load(%Machine.Passap{}, settings)
-    |> handle_machine_response(%State{
-      state
-      | pattern_settings: settings,
-        machine_settings: settings,
-        single_color: false
-    })
+  defp apply_settings(state) do
+    Machine.load(%Machine.Passap{}, current_settings(state))
+    |> handle_machine_response(state)
   end
 
   defp handle_machine_response({instructions, :done}, state) do
@@ -177,7 +183,7 @@ defmodule LiveKnit.Control do
     |> Map.put(
       :settings,
       case state.single_color do
-        true -> state.machine_settings
+        true -> state.single_color_settings
         false -> state.pattern_settings
       end
     )

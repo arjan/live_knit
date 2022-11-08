@@ -1,5 +1,5 @@
 <div>
-  <.form for={:form} phx-change="save" phx-target={@myself}>
+  <.form for={:"form-#{@settings.colors}"} phx-change="save" phx-target={@myself}>
 
   <div class="p-3 bg-light border mb-3">
     <p class="alert alert-info" role="alert" phx-target={@myself} phx-click="lv:clear-flash" phx-value-key="info" ><%= live_flash(@flash, :info) %></p>
