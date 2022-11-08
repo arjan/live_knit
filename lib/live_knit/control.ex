@@ -130,7 +130,8 @@ defmodule LiveKnit.Control do
     |> handle_machine_response(%State{
       state
       | pattern_settings: settings,
-        machine_settings: settings
+        machine_settings: settings,
+        single_color: false
     })
   end
 
