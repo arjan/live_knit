@@ -45,6 +45,11 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket}
   end
 
+  def handle_event("motor-" <> event, _, socket) do
+    Serial.write("M:" <> event)
+    {:noreply, socket}
+  end
+
   def handle_event("mode-" <> event, _, socket) do
     Control.set_single_color(event == "single")
     {:noreply, socket}

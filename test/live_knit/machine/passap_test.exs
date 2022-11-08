@@ -66,7 +66,7 @@ defmodule LiveKnit.Machine.PassapTest do
 
     # now we are done
 
-    assert :done = Machine.knit(machine)
+    assert {[], :done} = Machine.knit(machine)
   end
 
   test "1 color" do
@@ -153,7 +153,7 @@ defmodule LiveKnit.Machine.PassapTest do
 
     # now we are done
 
-    assert :done = Machine.knit(machine)
+    assert {[], :done} = Machine.knit(machine)
   end
 
   test "peek" do
@@ -181,5 +181,31 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert [{:status, %{left_needle: -90, right_needle: -50, direction: :uncalibrated}}] =
              instructions
+  end
+
+  test "motor control" do
+    settings = %Settings{
+      image: ["1"],
+      repeat_y: true,
+      repeat_x: true,
+      width: 80,
+      repeat_y_count: 1
+    }
+
+    {_, machine} = Machine.load(%Machine.Passap{}, settings)
+
+    # motor if on
+
+    {_, machine} = Machine.interpret_serial(machine, "M:1")
+    assert machine.motor_on
+
+    assert {_instructions, machine} = Machine.calibrated(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
+
+    # now we are done, but get instruction with motor off
+
+    assert {[{:write_delayed, "M:0", 1000}], :done} = Machine.knit(machine)
   end
 end

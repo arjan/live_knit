@@ -6,7 +6,8 @@ defmodule LiveKnit.Machine.Passap do
             rows: [],
             data: [],
             repeat: false,
-            first_needle: 0
+            first_needle: 0,
+            motor_on: false
 end
 
 defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
@@ -49,8 +50,12 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     {[], state}
   end
 
+  def knit(%State{direction: {:new_row, _}, rows_remaining: 0, motor_on: true}) do
+    {[{:write_delayed, "M:0", 1000}], :done}
+  end
+
   def knit(%State{direction: {:new_row, _}, rows_remaining: 0} = _state) do
-    :done
+    {[], :done}
   end
 
   def knit(%State{direction: {:new_row, _}, rows: [], repeat: true} = state) do
@@ -112,7 +117,8 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
        color: color,
        left_needle: left_needle,
        right_needle: right_needle,
-       rows_remaining: rows_remaining
+       rows_remaining: rows_remaining,
+       motor_on: state.motor_on
      }}
   end
 
@@ -134,6 +140,12 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   def interpret_serial(machine, "E:1") do
     knit(machine)
+  end
+
+  def interpret_serial(machine, "M:" <> flag) do
+    motor_on = flag == "1"
+    machine = %{machine | motor_on: motor_on}
+    {[state_instruction(machine)], machine}
   end
 
   def interpret_serial(machine, _data) do

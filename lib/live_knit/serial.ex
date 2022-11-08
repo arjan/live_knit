@@ -21,14 +21,18 @@ defmodule LiveKnit.Serial do
     {:ok, pid} = Nerves.UART.start_link()
     Logger.warn("#{port}")
 
-    :ok = Nerves.UART.open(pid, port, speed: 115_200, active: true)
+    case Nerves.UART.open(pid, port, speed: 115_200, active: true) do
+      :ok ->
+        Nerves.UART.configure(pid,
+          framing: {Nerves.UART.Framing.Line, separator: "\n"},
+          rx_framing_timeout: 1000
+        )
 
-    Nerves.UART.configure(pid,
-      framing: {Nerves.UART.Framing.Line, separator: "\n"},
-      rx_framing_timeout: 1000
-    )
+        {:ok, %State{pid: pid, port: port}}
 
-    {:ok, %State{pid: pid, port: port}}
+      {:error, reason} ->
+        {:stop, reason}
+    end
   end
 
   def handle_cast({:write, data}, state) do

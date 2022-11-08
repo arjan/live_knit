@@ -135,8 +135,9 @@ defmodule LiveKnit.Control do
     })
   end
 
-  defp handle_machine_response(:done, state) do
-    reset(state)
+  defp handle_machine_response({instructions, :done}, state) do
+    Enum.reduce(instructions, state, &handle_instruction/2)
+    |> reset()
   end
 
   defp handle_machine_response({instructions, machine}, state) do
@@ -147,6 +148,17 @@ defmodule LiveKnit.Control do
   defp handle_instruction({:write, data}, state) do
     Logger.debug("WRITE --> #{data}")
     Serial.write(data)
+    state
+  end
+
+  defp handle_instruction({:write_delayed, data, time}, state) do
+    Logger.debug("WRITE --> #{data} (after #{time}ms)")
+
+    Task.start(fn ->
+      Process.sleep(time)
+      Serial.write(data)
+    end)
+
     state
   end
 

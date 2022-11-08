@@ -70,10 +70,17 @@ defmodule LiveKnit.SerialManager do
           GenServer.stop(state.stub_pid)
         end
 
-        {:ok, serial_pid} = Serial.start_link(port)
+        case Serial.start_link(port) do
+          {:ok, serial_pid} ->
+            %State{state | connected: true, port: port, serial_pid: serial_pid}
+            |> send_state()
 
-        %State{state | connected: true, port: port, serial_pid: serial_pid}
-        |> send_state()
+          {:error, reason} ->
+            Logger.warn("Cannot open #{port}: #{inspect(reason)}")
+
+            %State{state | connected: false, port: port}
+            |> send_state()
+        end
     end
   end
 
