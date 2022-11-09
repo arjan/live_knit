@@ -32,4 +32,4 @@ live_knit-*.tar
 npm-debug.log
 /assets/node_modules/
 
-/database.db
+/database.*
