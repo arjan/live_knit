@@ -1,7 +1,30 @@
 defmodule LiveKnit.Storage do
+  alias LiveKnit.Settings
   alias LiveKnit.Repo
 
   alias LiveKnit.Storage.Preset
+
+  def load(name) do
+    case Repo.get_by(Preset, name: name) do
+      nil ->
+        {:ok, %Settings{}}
+
+      preset ->
+        Settings.load(preset.settings)
+    end
+  end
+
+  def save(name, settings) do
+    attrs = %{name: name, settings: settings}
+
+    case Repo.get_by(Preset, name: name) do
+      nil ->
+        create_preset(attrs)
+
+      preset ->
+        update_preset(preset, attrs)
+    end
+  end
 
   @doc """
   Returns the list of presets.

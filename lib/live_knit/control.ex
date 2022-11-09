@@ -4,7 +4,7 @@ defmodule LiveKnit.Control do
 
   require Logger
 
-  alias LiveKnit.{Serial, Machine, Settings}
+  alias LiveKnit.{Serial, Machine, Settings, Storage}
 
   defstruct machine: nil,
             single_color: false,
@@ -44,7 +44,7 @@ defmodule LiveKnit.Control do
     LiveKnit.Serial.subscribe()
 
     single_color_settings = %Settings{colors: 1, image: ["0"], repeat_x: true, repeat_y: true}
-    pattern_settings = %Settings{image: ["10", "01"], repeat_x: true, repeat_y: true}
+    {:ok, pattern_settings} = Storage.load("default")
 
     state = %State{
       single_color: false,
@@ -81,16 +81,21 @@ defmodule LiveKnit.Control do
       {:ok, settings} when single_color ->
         shared = Map.take(settings, @shared_settings)
 
+        pattern_settings = Map.merge(state.pattern_settings, shared)
+        {:ok, _} = Storage.save("default", pattern_settings)
+
         state = %State{
           state
           | single_color_settings: settings,
-            pattern_settings: Map.merge(state.pattern_settings, shared)
+            pattern_settings: pattern_settings
         }
 
         {:reply, :ok, apply_settings(state) |> send_state()}
 
       {:ok, settings} ->
         shared = Map.take(settings, @shared_settings)
+
+        {:ok, _} = Storage.save("default", settings)
 
         state = %State{
           state

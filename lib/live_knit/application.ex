@@ -12,6 +12,8 @@ defmodule LiveKnit.Application do
         LiveKnitWeb.Telemetry,
         # Start the PubSub system
         {Phoenix.PubSub, name: LiveKnit.PubSub},
+        # The storage stuff
+        LiveKnit.Repo,
         # Start the Endpoint (http/https)
         LiveKnitWeb.Endpoint,
         # The serial connection
