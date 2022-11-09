@@ -37,6 +37,8 @@ defmodule LiveKnit.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:pixels, "~> 0.0"},
       {:ecto, "~> 3.9"},
+      {:ecto_sql, "~> 3.9"},
+      {:ecto_sqlite3, "~> 0.8.2"},
       {:phoenix, "~> 1.6.15"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
