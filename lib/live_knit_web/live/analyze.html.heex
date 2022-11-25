@@ -1,0 +1,19 @@
+<div class="md-3">
+  <%= if @serial_status.connected do %>
+  <p>Connected to machine at <%= @serial_status.port %></p>
+  <% else %>
+  <p class="text-danger">Not connected to machine!</p>
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col">
+    <canvas
+      style="width: 100%; height: 200px"
+      width="800"
+      id="chart-canvas"
+      phx-update="ignore"
+      phx-hook="LineChartHook"
+    ></canvas>
+  </div>
+</div>
