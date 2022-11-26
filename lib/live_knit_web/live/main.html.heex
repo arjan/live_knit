@@ -34,10 +34,10 @@
         <div class="row mb-2 large-status">
           <div class="col-6 arrow text-primary">
             <%= if @control.machine_status.direction in [:uncalibrated, :ltr] do %>
-              <span>🢂</span>
+              <span>&gt;</span>
             <% end %>
             <%= if @control.machine_status.direction in [:rtl] do %>
-              <span>🢀</span>
+              <span>&lt;</span>
             <% end %>
           </div>
           <div class="col color text-center">
