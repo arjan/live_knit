@@ -35,14 +35,30 @@ defmodule LiveKnit.Settings do
     :center
   ]
 
+  def load(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, @fields)
+    |> apply_action(:insert)
+    |> sane_errors()
+  end
+
   def apply(struct, attrs) do
     struct
+    |> changeset(attrs)
+    |> apply_action(:update)
+    |> sane_errors()
+  end
+
+  defp changeset(cs, attrs) do
+    cs
     |> cast(attrs, @fields)
     |> validate_number(:width, greater_than_or_equal_to: 1, less_than_or_equal_to: 180)
     |> validate_number(:center, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
     |> validate_inclusion(:colors, [1, 2, 3, 4])
-    |> apply_action(:update)
-    |> case do
+  end
+
+  defp sane_errors(result) do
+    case result do
       {:ok, _} = r ->
         r
 

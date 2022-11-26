@@ -10,13 +10,13 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert {instructions, machine} = Machine.load(%Machine.Passap{}, settings)
 
-    assert [{:status, %{left_needle: -4, right_needle: 4, direction: :uncalibrated}}] =
+    assert [{:status, %{left_needle: 56, right_needle: 64, direction: :uncalibrated}}] =
              instructions
 
     assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
-             {:write, "F:86"},
+             {:write, "F:26"},
              {:write, "P:11111111"},
              {:status, %{direction: :rtl, color: 0, rows_remaining: 8}},
              {:row, "00000000"}
@@ -39,7 +39,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:86"},
+             {:write, "F:26"},
              {:write, "P:10000001"},
              {:status, %{direction: :rtl, color: 0, rows_remaining: 7}},
              {:row, "01111110"}
@@ -84,7 +84,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
-             {:write, "F:86"},
+             {:write, "F:26"},
              {:write, "P:11111111"},
              {:status, %{direction: :rtl, color: 0, rows_remaining: 2}},
              {:row, "00000000"}
@@ -97,7 +97,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:86"},
+             {:write, "F:26"},
              {:write, "P:11111111"},
              {:status, %{direction: :rtl, color: 0}},
              {:row, "00000000"}
@@ -120,7 +120,14 @@ defmodule LiveKnit.Machine.PassapTest do
   end
 
   test "pattern repeat" do
-    settings = %Settings{image: ["100", "010", "001"], repeat_y: true, repeat_x: true, width: 80}
+    settings = %Settings{
+      image: ["100", "010", "001"],
+      repeat_y: true,
+      repeat_x: true,
+      width: 80,
+      center: 0
+    }
+
     {_, machine} = Machine.load(%Machine.Passap{}, settings)
 
     assert {instructions, _machine} = Machine.calibrated(machine)

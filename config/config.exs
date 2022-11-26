@@ -1,11 +1,10 @@
-# This file is responsible for configuring your application
-# and its dependencies with the aid of the Config module.
-#
-# This configuration file is loaded before any dependency and
-# is restricted to this project.
-
 # General application configuration
 import Config
+
+config :live_knit,
+  ecto_repos: [LiveKnit.Repo]
+
+config :live_knit, LiveKnit.Repo, database: "#{__DIR__}/../database.db"
 
 # Configures the endpoint
 config :live_knit, LiveKnitWeb.Endpoint,

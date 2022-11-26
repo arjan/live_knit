@@ -18,6 +18,7 @@ defmodule LiveKnitWeb.Router do
     pipe_through(:browser)
 
     live("/", Live.Main, :index)
+    live("/analyze", Live.Analyze, :index)
   end
 
   # Other scopes may use custom stacks.
