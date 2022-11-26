@@ -3,10 +3,13 @@ defmodule LiveKnitWeb.Live.Analyze do
 
   alias LiveKnit.{Serial, SerialManager}
 
+  defp rt(), do: Enum.random(0..50) + 20
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       #      :timer.send_interval(50, self(), :chart_test)
+      Process.send_after(self(), :chart_test, rt())
       Serial.subscribe()
       SerialManager.subscribe()
     end
@@ -20,13 +23,17 @@ defmodule LiveKnitWeb.Live.Analyze do
 
   @impl Phoenix.LiveView
   def handle_info(:chart_test, socket) do
-    socket = push_event(socket, "datapoint", %{value: [r(), r()]})
+    time = :erlang.convert_time_unit(:erlang.monotonic_time(), :native, :microsecond)
+    Process.send_after(self(), :chart_test, rt())
+
+    socket = push_event(socket, "datapoint", %{time: time, value: [r(), r()]})
     {:noreply, socket}
   end
 
   def handle_info({:serial_in, "S:" <> data}, socket) do
-    value = data |> String.split(" ") |> Enum.map(&String.to_integer/1)
-    socket = push_event(socket, "datapoint", %{value: value})
+    [time | values] = data |> String.split(" ") |> Enum.map(&String.to_integer/1)
+
+    socket = push_event(socket, "datapoint", %{time: time, value: values})
     {:noreply, socket}
   end
 
