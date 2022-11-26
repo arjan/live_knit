@@ -3,16 +3,17 @@
 const COLORS = ["#aaff00", "#ff9900"];
 const DX = 0.00002;
 const DY = 30;
-let scale = 10;
+let scale = 20;
 
 // A wrapper of Chart.js that configures the realtime line chart.
 export default class {
-  constructor(canvas) {
-    const r = canvas.getBoundingClientRect();
+  constructor(div) {
+    const r = div.getBoundingClientRect();
 
-    this.canvas = canvas;
+    this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("width", r.width);
     this.canvas.setAttribute("height", r.height);
+    div.appendChild(this.canvas);
 
     this.ctx = this.canvas.getContext("2d");
     this.width = r.width;
@@ -50,6 +51,7 @@ export default class {
   addPoint(time, values) {
     const c = this.ctx;
     c.lineWidth = 1;
+    console.log('values', values)
 
     const [ox] = this.translate(0, time, 0);
     c.beginPath();

@@ -9,7 +9,7 @@ defmodule LiveKnitWeb.Live.Analyze do
   def mount(_params, _session, socket) do
     if connected?(socket) do
       #      :timer.send_interval(50, self(), :chart_test)
-      Process.send_after(self(), :chart_test, rt())
+      #      Process.send_after(self(), :chart_test, rt())
       Serial.subscribe()
       SerialManager.subscribe()
     end
@@ -17,6 +17,8 @@ defmodule LiveKnitWeb.Live.Analyze do
     socket =
       socket
       |> assign(:serial_status, SerialManager.status())
+      |> assign(:direction, "?")
+      |> assign(:cursor, "?")
 
     {:ok, socket}
   end
@@ -30,8 +32,16 @@ defmodule LiveKnitWeb.Live.Analyze do
     {:noreply, socket}
   end
 
+  def handle_info({:serial_in, "D:" <> data}, socket) do
+    {:noreply, socket |> assign(:direction, data)}
+  end
+
+  def handle_info({:serial_in, "C:" <> data}, socket) do
+    {:noreply, socket |> assign(:cursor, data)}
+  end
+
   def handle_info({:serial_in, "S:" <> data}, socket) do
-    [time | values] = data |> String.split(" ") |> Enum.map(&String.to_integer/1)
+    [time | values] = data |> String.trim() |> String.split(" ") |> Enum.map(&String.to_integer/1)
 
     socket = push_event(socket, "datapoint", %{time: time, value: values})
     {:noreply, socket}

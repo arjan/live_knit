@@ -73,9 +73,9 @@ defmodule LiveKnitWeb.Live.Main do
     {:noreply, socket |> assign(:serial_status, status)}
   end
 
-  def handle_info({:serial_in, "C:" <> _}, socket) do
-    {:noreply, socket}
-  end
+  # def handle_info({:serial_in, "C:" <> _}, socket) do
+  #   {:noreply, socket}
+  # end
 
   def handle_info({:serial_in, data}, socket) do
     message = "<-- " <> data
