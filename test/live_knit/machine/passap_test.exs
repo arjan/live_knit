@@ -17,22 +17,30 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert [
              {:write, "F:26"},
+             {:write, "P:00000000"},
+             {:status, %{direction: :rtl, color: -1, rows_remaining: 8}}
+           ] = instructions
+
+    assert {instructions, machine} = Machine.knit(machine)
+
+    assert [
+             {:write, "F:26"},
              {:write, "P:11111111"},
-             {:status, %{direction: :rtl, color: 0, rows_remaining: 8}},
+             {:status, %{direction: :ltr, color: -1, rows_remaining: 8}},
              {:row, "00000000"}
            ] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
 
-    assert [{:status, %{direction: :ltr, color: 0}}] = instructions
+    assert [{:status, %{direction: :rtl, color: 0}}] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
 
-    assert [{:write, "P:00000000"}, {:status, %{direction: :rtl, color: 1}}] = instructions
+    assert [{:write, "P:00000000"}, {:status, %{direction: :ltr, color: 0}}] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
 
-    assert [{:status, %{direction: :ltr, color: 1}}] = instructions
+    assert [{:status, %{direction: :rtl, color: 1}}] = instructions
 
     ## next data row of pixels
 
@@ -41,19 +49,19 @@ defmodule LiveKnit.Machine.PassapTest do
     assert [
              {:write, "F:26"},
              {:write, "P:10000001"},
-             {:status, %{direction: :rtl, color: 0, rows_remaining: 7}},
+             {:status, %{direction: :ltr, color: 1, rows_remaining: 7}},
              {:row, "01111110"}
            ] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
-    assert [{:status, %{direction: :ltr, color: 0}}] = instructions
+    assert [{:status, %{direction: :rtl, color: 0}}] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
 
-    assert [{:write, "P:01111110"}, {:status, %{direction: :rtl, color: 1}}] = instructions
+    assert [{:write, "P:01111110"}, {:status, %{direction: :ltr, color: 0}}] = instructions
 
     assert {instructions, machine} = Machine.knit(machine)
-    assert [{:status, %{direction: :ltr, color: 1}}] = instructions
+    assert [{:status, %{direction: :rtl, color: 1}}] = instructions
 
     # next 6 rows, = 6 * 4 knits..
 

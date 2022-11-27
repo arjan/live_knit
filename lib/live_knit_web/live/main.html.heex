@@ -6,14 +6,14 @@
 
     <div class={"knitting future #{knitting_size_class(@control.settings.width)}"}>
       <%= for row <- Enum.reverse(@control.upcoming) do %>
-        <PatternRow.row row={row} />
-      <% end %>
+          <PatternRow.row row={row} />
+          <% end %>
     </div>
 
     <div class={"knitting history #{knitting_size_class(@control.settings.width)}"}>
       <%= for {row, index} <- Enum.with_index(@control.history) do %>
-        <PatternRow.row row={row} current={index == 0} />
-      <% end %>
+          <PatternRow.row row={row} current={index == 0} />
+          <% end %>
     </div>
   </div>
 
@@ -21,9 +21,9 @@
 
     <div class="md-3">
       <%= if @serial_status.connected do %>
-        <p>Connected to machine at <%= @serial_status.port %></p>
+      <p>Connected to machine at <%= @serial_status.port %></p>
       <% else %>
-        <p class="text-danger">Not connected to machine!</p>
+      <p class="text-danger">Not connected to machine!</p>
       <% end %>
     </div>
 
@@ -31,48 +31,54 @@
       <h5 class="mb-3">Machine: <%= if @control.knitting do %>Knitting<% else %>Stopped<% end %></h5>
 
       <%= if @control.knitting do %>
-        <div class="row mb-2 large-status">
-          <div class="col-6 arrow text-primary">
-            <%= if @control.machine_status.direction in [:uncalibrated, :ltr] do %>
-              <span>&gt;</span>
+      <div class="row mb-2 large-status">
+        <div class="col-6 arrow text-primary">
+          <%= if @control.machine_status.direction in [:uncalibrated, :ltr] do %>
+          <span>&gt;</span>
+          <% end %>
+          <%= if @control.machine_status.direction in [:rtl] do %>
+          <span>&lt;</span>
+          <% end %>
+        </div>
+        <div class="col color text-center">
+          <%= if @control.machine_status.direction != :uncalibrated do %>
+          <span class={"yarn color-#{@control.machine_status.color}"}>
+            <%= if @control.machine_status.color == -1 do %>
+            G
+            <% else %>
+            <%= @control.machine_status.color + 1 %>
             <% end %>
-            <%= if @control.machine_status.direction in [:rtl] do %>
-              <span>&lt;</span>
-            <% end %>
-          </div>
-          <div class="col color text-center">
-            <%= if @control.machine_status.direction != :uncalibrated do %>
-              <span class={"yarn color-#{@control.machine_status.color}"}><%= @control.machine_status.color + 1 %></span>
-            <% end %>
-          </div>
-
-          <div class="col remaining text-center">
-            <span><%= @control.machine_status.rows_remaining %></span>
-          </div>
+          </span>
+          <% end %>
         </div>
 
-        <%= if @control.machine_status.direction == :uncalibrated do %>
-          Move carriage right for calibration
-        <% else %>
-          <div class="row">
-            <div class="col-6">
-              <%= if @control.machine_status.direction == :rtl do %>
-                Moving carriage left
-              <% end %>
-              <%= if @control.machine_status.direction == :ltr do %>
-                Moving carriage right
-              <% end %>
-            </div>
-            <div class="col text-center">
-              Color
-            </div>
-            <div class="col text-center">
-              Rows left
-            </div>
-          </div>
-        <% end %>
+        <div class="col remaining text-center">
+          <span><%= @control.machine_status.rows_remaining %></span>
+        </div>
+      </div>
+
+      <%= if @control.machine_status.direction == :uncalibrated do %>
+      Move carriage right for calibration
       <% else %>
-        Please set the pattern and press 'start'.
+      <div class="row">
+        <div class="col-6">
+          <%= if @control.machine_status.direction == :rtl do %>
+          Moving carriage left
+          <% end %>
+          <%= if @control.machine_status.direction == :ltr do %>
+          Moving carriage right
+          <% end %>
+        </div>
+        <div class="col text-center">
+          Color
+        </div>
+        <div class="col text-center">
+          Rows left
+        </div>
+      </div>
+      <% end %>
+      <% else %>
+      Please set the pattern and press 'start'.
       <% end %>
     </div>
 
@@ -83,11 +89,11 @@
         <button type="button" class="btn btn-secondary btn-md" phx-click="knit-stop" disabled={!@control.knitting}>Stop</button>
 
         <%= if @control.knitting do %>
-          <%= if !@control.machine_status.motor_on do %>
-            <button type="button" class="btn btn-success btn-md" phx-click="motor-1" disabled={@control.machine_status.direction == :uncalibrated}>Motor on</button>
-          <% else %>
-            <button type="button" class="btn btn-danger btn-md" phx-click="motor-0">Motor off</button>
-          <% end %>
+        <%= if !@control.machine_status.motor_on do %>
+        <button type="button" class="btn btn-success btn-md" phx-click="motor-1" disabled={@control.machine_status.direction == :uncalibrated}>Motor on</button>
+        <% else %>
+        <button type="button" class="btn btn-danger btn-md" phx-click="motor-0">Motor off</button>
+        <% end %>
         <% end %>
       </div>
 
@@ -104,8 +110,8 @@
       <h5>Data</h5>
       <pre
         class="bg-light"
-      ><code><%= for line <- @serial_log do %><%= line %>
-      <% end %></code></pre>
+        ><code><%= for line <- @serial_log do %><%= line %>
+                   <% end %></code></pre>
     </div>
   </div>
 

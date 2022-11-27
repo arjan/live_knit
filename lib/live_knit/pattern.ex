@@ -45,4 +45,10 @@ defmodule LiveKnit.Pattern do
   defp select_color(<<_::size(8), rest::binary>>, color, acc) do
     select_color(rest, color, <<acc::binary, ?0>>)
   end
+
+  def fill(color, n) do
+    1..n
+    |> Enum.map(fn _ -> ?0 + color end)
+    |> to_string()
+  end
 end

@@ -67,7 +67,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
     state = %State{
       state
-      | direction: {:ltr, 0},
+      | direction: {:rtl, color},
         rows: rest,
         current_pattern: current_pattern,
         rows_remaining: state.rows_remaining - 1
@@ -75,7 +75,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
     instructions = [
       {:write, "F:#{state.first_needle}"},
-      {:write, "P:" <> Pattern.select_color(current_pattern, color)},
+      {:write, "P:" <> Pattern.select_color(current_pattern, max(0, color))},
       state_instruction(state),
       {:row, current_pattern}
     ]
@@ -83,21 +83,21 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
     {instructions, state}
   end
 
-  def knit(%State{direction: {:ltr, col}} = state) do
+  def knit(%State{direction: {:rtl, col}} = state) do
     state =
       if col == state.colors - 1 do
         %State{state | direction: {:new_row, 0}}
       else
-        %State{state | direction: {:rtl, col + 1}}
+        %State{state | direction: {:ltr, max(0, col) + 1}}
       end
 
     instructions = [state_instruction(state)]
     {instructions, state}
   end
 
-  def knit(%State{direction: {:rtl, col}} = state) do
+  def knit(%State{direction: {:ltr, col}} = state) do
     pattern = Pattern.select_color(state.current_pattern, col)
-    state = %State{state | direction: {:ltr, col}}
+    state = %State{state | direction: {:rtl, col}}
 
     instructions = [{:write, "P:" <> pattern}, state_instruction(state)]
     {instructions, state}
@@ -123,12 +123,15 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   end
 
   # state.direction always contains the 'next direction' instead of the current
-  defp color_and_direction({:rtl, col}, r, n), do: {:ltr, next_color(col, n), r + 1}
-  defp color_and_direction({:ltr, col}, r, n), do: {:rtl, current_color(col, n), r + 1}
-  defp color_and_direction({:new_row, col}, r, n), do: {:ltr, next_color(col, n), r}
-  defp color_and_direction(d, r, _n), do: {d, 0, r}
+  defp color_and_direction({:rtl, -1}, r, _n), do: {:ltr, -1, r + 1}
+  defp color_and_direction({:rtl, col}, r, n), do: {:ltr, prev_color(col, n), r + 1}
+  defp color_and_direction({:ltr, col}, r, n), do: {:rtl, prev_color(col, n), r + 1}
+  defp color_and_direction({:new_row, -1}, r, n), do: {:rtl, -1, r}
+  defp color_and_direction({:new_row, col}, r, n), do: {:rtl, prev_color(col, n), r}
+  defp color_and_direction(:empty_row, r, _n), do: {:rtl, -1, r}
+  defp color_and_direction(:uncalibrated, r, _n), do: {:uncalibrated, 0, r}
 
-  defp next_color(c, n), do: rem(c + 1, n)
+  defp prev_color(c, n), do: rem(n + c - 1, n)
 
   defp current_color(_c, 1), do: 0
   defp current_color(c, _), do: c
@@ -187,7 +190,13 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   @impl true
 
   def calibrated(%State{direction: :uncalibrated} = machine) do
-    knit(%State{machine | direction: {:new_row, 0}})
+    state = %State{machine | direction: {:new_row, -1}}
+
+    {[
+       {:write, "F:#{state.first_needle}"},
+       {:write, "P:" <> Pattern.fill(0, String.length(List.first(state.data)))},
+       state_instruction(state)
+     ], state}
   end
 
   def calibrated(machine) do
