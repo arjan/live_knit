@@ -25,10 +25,16 @@ defmodule LiveKnitWeb.Live.Analyze do
 
   @impl Phoenix.LiveView
   def handle_info(:chart_test, socket) do
-    time = :erlang.convert_time_unit(:erlang.monotonic_time(), :native, :microsecond)
-    Process.send_after(self(), :chart_test, rt())
+    socket =
+      if !socket.assigns.serial_status.connected do
+        time = :erlang.convert_time_unit(:erlang.monotonic_time(), :native, :microsecond)
+        Process.send_after(self(), :chart_test, rt())
 
-    socket = push_event(socket, "datapoint", %{time: time, value: [r(), r()]})
+        push_event(socket, "datapoint", %{time: time, value: [r(), r()]})
+      else
+        socket
+      end
+
     {:noreply, socket}
   end
 
