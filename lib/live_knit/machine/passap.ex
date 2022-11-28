@@ -124,17 +124,17 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
   # state.direction always contains the 'next direction' instead of the current
   defp color_and_direction({:rtl, -1}, r, _n), do: {:ltr, -1, r + 1}
+  defp color_and_direction({:rtl, col}, r, 1), do: {:rtl, col, r + 1}
   defp color_and_direction({:rtl, col}, r, n), do: {:ltr, prev_color(col, n), r + 1}
+  defp color_and_direction({:ltr, col}, r, 1), do: {:ltr, col, r + 1}
   defp color_and_direction({:ltr, col}, r, n), do: {:rtl, prev_color(col, n), r + 1}
-  defp color_and_direction({:new_row, -1}, r, n), do: {:rtl, -1, r}
+  defp color_and_direction({:new_row, _}, r, 1), do: {:ltr, 0, r}
+  defp color_and_direction({:new_row, -1}, r, _n), do: {:rtl, -1, r}
   defp color_and_direction({:new_row, col}, r, n), do: {:rtl, prev_color(col, n), r}
   defp color_and_direction(:empty_row, r, _n), do: {:rtl, -1, r}
   defp color_and_direction(:uncalibrated, r, _n), do: {:uncalibrated, 0, r}
 
   defp prev_color(c, n), do: rem(n + c - 1, n)
-
-  defp current_color(_c, 1), do: 0
-  defp current_color(c, _), do: c
 
   @impl true
   def interpret_serial(machine, "R:fc") do
@@ -190,13 +190,17 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
   @impl true
 
   def calibrated(%State{direction: :uncalibrated} = machine) do
-    state = %State{machine | direction: {:new_row, -1}}
+    if machine.colors > 1 do
+      state = %State{machine | direction: {:new_row, -1}}
 
-    {[
-       {:write, "F:#{state.first_needle}"},
-       {:write, "P:" <> Pattern.fill(0, String.length(List.first(state.data)))},
-       state_instruction(state)
-     ], state}
+      {[
+         {:write, "F:#{state.first_needle}"},
+         {:write, "P:" <> Pattern.fill(0, String.length(List.first(state.data)))},
+         state_instruction(state)
+       ], state}
+    else
+      knit(%State{machine | direction: {:new_row, 0}})
+    end
   end
 
   def calibrated(machine) do

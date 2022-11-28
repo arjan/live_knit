@@ -138,7 +138,10 @@ defmodule LiveKnit.Machine.PassapTest do
 
     {_, machine} = Machine.load(%Machine.Passap{}, settings)
 
-    assert {instructions, _machine} = Machine.calibrated(machine)
+    assert {_instructions, machine} = Machine.calibrated(machine)
+
+    # skip first empty row
+    assert {instructions, _machine} = Machine.knit(machine)
 
     assert [{:write, "F:50"}, {:write, "P:011011011" <> _}, {:status, _}, {:row, _}] =
              instructions
@@ -155,6 +158,7 @@ defmodule LiveKnit.Machine.PassapTest do
 
     {_, machine} = Machine.load(%Machine.Passap{}, settings)
     assert {_instructions, machine} = Machine.calibrated(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
@@ -215,6 +219,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert machine.motor_on
 
     assert {_instructions, machine} = Machine.calibrated(machine)
+    assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
     assert {_instructions, machine} = Machine.knit(machine)
