@@ -12,6 +12,9 @@ defmodule LiveKnitWeb.Live.Analyze do
       #      Process.send_after(self(), :chart_test, rt())
       Serial.subscribe()
       SerialManager.subscribe()
+
+      Serial.write("F:20")
+      Serial.write("P:11110000111100001111")
     end
 
     socket =
@@ -38,6 +41,10 @@ defmodule LiveKnitWeb.Live.Analyze do
     {:noreply, socket}
   end
 
+  def handle_info({:serial_out, _}, socket) do
+    {:noreply, socket}
+  end
+
   def handle_info({:serial_in, "D:" <> data}, socket) do
     {:noreply, socket |> assign(:direction, data)}
   end
@@ -47,13 +54,17 @@ defmodule LiveKnitWeb.Live.Analyze do
   end
 
   def handle_info({:serial_in, "S:" <> data}, socket) do
+    IO.inspect(data, label: "data")
+
     [time | values] = data |> String.trim() |> String.split(" ") |> Enum.map(&String.to_integer/1)
 
     socket = push_event(socket, "datapoint", %{time: time, value: values})
     {:noreply, socket}
   end
 
-  def handle_info({:serial_in, _}, socket) do
+  def handle_info({:serial_in, d}, socket) do
+    IO.inspect(d, label: "d")
+
     {:noreply, socket}
   end
 
