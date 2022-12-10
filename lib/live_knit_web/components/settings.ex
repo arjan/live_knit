@@ -39,9 +39,9 @@ defmodule LiveKnitWeb.Components.Settings do
   def handle_event("inc-" <> attr, _attrs, socket), do: incdec(attr, 1, socket)
   def handle_event("dec-" <> attr, _attrs, socket), do: incdec(attr, -1, socket)
 
-  def handle_event("center-" <> dir, _attrs, socket) do
+  def handle_event("position-" <> dir, _attrs, socket) do
     status = Control.status()
-    change_settings(%{center: status.settings.center + dir(dir)}, socket)
+    change_settings(%{position: status.settings.position + dir(dir)}, socket)
   end
 
   defp dir("plus"), do: 1

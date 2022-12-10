@@ -13,11 +13,16 @@ defmodule LiveKnitWeb.Live.Main do
 
     socket =
       socket
+      |> assign(:pattern_open, true)
       |> assign(:control, Control.status())
       |> assign(:serial_status, SerialManager.status())
       |> assign(:serial_log, [])
 
     {:ok, socket}
+  end
+
+  def handle_event("toggle-pattern", _, socket) do
+    {:noreply, socket |> assign(:pattern_open, !socket.assigns.pattern_open)}
   end
 
   def handle_event("image-data", data_url, socket) do

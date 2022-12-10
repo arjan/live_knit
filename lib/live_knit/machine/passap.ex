@@ -23,7 +23,7 @@ defimpl LiveKnit.Machine, for: LiveKnit.Machine.Passap do
 
     # center the work on the bed
     bw2 = div(@bed_width, 2)
-    first_needle = ceil(bw2 - settings.width / 2) - settings.center
+    first_needle = bw2 - settings.position
     first_needle = max(0, first_needle)
     first_needle = min(@bed_width - settings.width, first_needle)
 

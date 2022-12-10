@@ -19,7 +19,7 @@ defmodule LiveKnit.Settings do
     field(:double_x, :boolean, default: false)
     field(:double_y, :boolean, default: false)
     # around which needle on the bed to knit
-    field(:center, :integer, default: 60)
+    field(:position, :integer, default: 70)
   end
 
   @fields [
@@ -32,7 +32,7 @@ defmodule LiveKnit.Settings do
     :repeat_y_count,
     :double_x,
     :double_y,
-    :center
+    :position
   ]
 
   def load(attrs) do
@@ -53,7 +53,7 @@ defmodule LiveKnit.Settings do
     cs
     |> cast(attrs, @fields)
     |> validate_number(:width, greater_than_or_equal_to: 1, less_than_or_equal_to: 180)
-    |> validate_number(:center, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
+    |> validate_number(:position, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
     |> validate_inclusion(:colors, [1, 2, 3, 4])
   end
 

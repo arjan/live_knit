@@ -10,13 +10,13 @@ defmodule LiveKnit.Machine.PassapTest do
 
     assert {instructions, machine} = Machine.load(%Machine.Passap{}, settings)
 
-    assert [{:status, %{left_needle: 56, right_needle: 64, direction: :uncalibrated}}] =
+    assert [{:status, %{left_needle: 62, right_needle: 70, direction: :uncalibrated}}] =
              instructions
 
     assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
-             {:write, "F:26"},
+             {:write, "F:20"},
              {:write, "P:00000000"},
              {:status, %{direction: :rtl, color: -1, rows_remaining: 8}}
            ] = instructions
@@ -24,7 +24,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:26"},
+             {:write, "F:20"},
              {:write, "P:11111111"},
              {:status, %{direction: :ltr, color: -1, rows_remaining: 8}},
              {:row, "00000000"}
@@ -47,7 +47,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:26"},
+             {:write, "F:20"},
              {:write, "P:10000001"},
              {:status, %{direction: :ltr, color: 1, rows_remaining: 7}},
              {:row, "01111110"}
@@ -92,7 +92,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.calibrated(machine)
 
     assert [
-             {:write, "F:26"},
+             {:write, "F:20"},
              {:write, "P:11111111"},
              {:status, %{direction: :rtl, color: 0, rows_remaining: 2}},
              {:row, "00000000"}
@@ -105,7 +105,7 @@ defmodule LiveKnit.Machine.PassapTest do
     assert {instructions, machine} = Machine.knit(machine)
 
     assert [
-             {:write, "F:26"},
+             {:write, "F:20"},
              {:write, "P:11111111"},
              {:status, %{direction: :rtl, color: 0}},
              {:row, "00000000"}
@@ -133,7 +133,7 @@ defmodule LiveKnit.Machine.PassapTest do
       repeat_y: true,
       repeat_x: true,
       width: 80,
-      center: 0
+      position: 40
     }
 
     {_, machine} = Machine.load(%Machine.Passap{}, settings)
@@ -189,13 +189,13 @@ defmodule LiveKnit.Machine.PassapTest do
   end
 
   test "knitting positioning" do
-    settings = %Settings{image: ["100", "010", "001"], center: 73, width: 40}
+    settings = %Settings{image: ["100", "010", "001"], position: 90, width: 40}
     {instructions, _} = Machine.load(%Machine.Passap{}, settings)
 
     assert [{:status, %{left_needle: 50, right_needle: 90, direction: :uncalibrated}}] =
              instructions
 
-    settings = %Settings{image: ["100", "010", "001"], center: -90, width: 40}
+    settings = %Settings{image: ["100", "010", "001"], position: -50, width: 40}
     {instructions, _} = Machine.load(%Machine.Passap{}, settings)
 
     assert [{:status, %{left_needle: -90, right_needle: -50, direction: :uncalibrated}}] =
