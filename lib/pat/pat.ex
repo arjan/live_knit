@@ -50,6 +50,43 @@ defmodule Pat do
 
       canvas
     end
+
+    def transform(canvas, operations) when is_list(operations) do
+      Enum.reduce(operations, canvas, &transform(&2, &1))
+    end
+
+    def transform(canvas, :hflip) do
+      data = rows(canvas) |> Enum.reverse() |> to_string
+      %Canvas{canvas | data: data}
+    end
+
+    def transform(canvas, :vflip) do
+      data = rows(canvas) |> Enum.map(&String.reverse/1) |> to_string
+      %Canvas{canvas | data: data}
+    end
+
+    def transform(canvas, :r180) do
+      transform(canvas, [:hflip, :vflip])
+    end
+
+    def transform(canvas, :rcw) do
+      transform(canvas, [:rccw, :r180])
+    end
+
+    def transform(canvas, :rccw) do
+      # rotate counter clock wise
+      data =
+        Canvas.rows(canvas)
+        |> Enum.map(&String.split(&1, "", trim: true))
+        |> transpose()
+        |> Enum.reverse()
+        |> to_string()
+
+      %Canvas{canvas | w: canvas.h, h: canvas.w, data: data}
+    end
+
+    defp transpose([[] | _]), do: []
+    defp transpose(m), do: [Enum.map(m, &hd/1) | transpose(Enum.map(m, &tl/1))]
   end
 
   defmodule Font do

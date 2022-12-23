@@ -6,12 +6,20 @@ defmodule PatTest do
 
   describe "canvas" do
     test "new canvas" do
-      c =
-        Canvas.new(2, 2)
-        |> Canvas.set(0, 0, "1")
-        |> Canvas.set(1, 1, "1")
-
+      c = Canvas.new(2, 2) |> Canvas.set(0, 0, "1") |> Canvas.set(1, 1, "1")
       assert "1001" == c.data
+    end
+
+    test "transform" do
+      c = Canvas.new(3, 3) |> Canvas.set(0, 0, "1") |> Canvas.set(1, 1, "1")
+      assert "000010100" = Canvas.transform(c, :hflip).data
+      assert "001010000" = Canvas.transform(c, :vflip).data
+      assert "000010001" = Canvas.transform(c, :r180).data
+
+      c = Canvas.new(2, 3) |> Canvas.set(0, 0, "1") |> Canvas.set(1, 1, "1")
+
+      assert "010100" = Canvas.transform(c, :rccw).data
+      assert "001010" = Canvas.transform(c, :rcw).data
     end
 
     test "set multiple pixels, crop" do
