@@ -136,6 +136,10 @@
   margin: -1rem 0 2rem;
 }
 
+textarea.code {
+  font-family: monospace;
+}
+
 /* LiveView specific classes for your customization */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {

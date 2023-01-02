@@ -19,6 +19,7 @@ defmodule LiveKnitWeb.Router do
 
     live("/", Live.Main, :index)
     live("/analyze", Live.Analyze, :index)
+    live("/pat", Live.Pat, :index)
   end
 
   # Other scopes may use custom stacks.

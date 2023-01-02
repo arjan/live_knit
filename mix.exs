@@ -33,6 +33,7 @@ defmodule LiveKnit.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:dune, "~> 0.2"},
       {:unidecode, "~> 1.0"},
       {:nerves_uart, "~> 1.2"},
       {:phoenix_pubsub, "~> 2.0"},

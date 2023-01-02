@@ -1,93 +1,88 @@
 defmodule Pat do
-  defmacro __using__(_) do
+  defstruct w: 0, h: 0, data: ""
+  alias __MODULE__, as: Canvas
+
+  def new(w, h, pixel \\ "0") when is_binary(pixel) and byte_size(pixel) == 1 do
+    data = to_string(for _ <- 1..w, _ <- 1..h, do: pixel)
+    %Pat{w: w, h: h, data: data}
   end
 
-  defmodule Canvas do
-    defstruct w: 0, h: 0, data: ""
-    alias __MODULE__, as: Canvas
+  def set(%Pat{} = canvas, x, y, pixel) when is_binary(pixel) do
+    o = offset(canvas, x, y)
 
-    def new(w, h, pixel \\ "0") when is_binary(pixel) and byte_size(pixel) == 1 do
-      data = to_string(for _ <- 1..w, _ <- 1..h, do: pixel)
-      %Canvas{w: w, h: h, data: data}
-    end
+    if o >= 0 and o < byte_size(canvas.data) do
+      {head, rest} = String.split_at(canvas.data, offset(canvas, x, y))
 
-    def set(%Canvas{} = canvas, x, y, pixel) when is_binary(pixel) do
-      o = offset(canvas, x, y)
-
-      if o >= 0 and o < byte_size(canvas.data) do
-        {head, rest} = String.split_at(canvas.data, offset(canvas, x, y))
-
-        l = byte_size(pixel)
-        max_w = min(l, canvas.w - x)
-        {_ignore, tail} = String.split_at(rest, max_w)
-        {pixel, _ignore} = String.split_at(pixel, max_w)
-        %Canvas{canvas | data: to_string([head, pixel, tail])}
-      else
-        canvas
-      end
-    end
-
-    def set(%Canvas{} = canvas, x, y, %Canvas{} = source) do
-      source_rows = rows(source)
-
-      for dy <- 0..(source.h - 1), reduce: canvas do
-        canvas -> set(canvas, x, y + dy, Enum.at(source_rows, dy))
-      end
-    end
-
-    defp offset(%Canvas{} = canvas, x, y), do: canvas.w * y + x
-
-    def rows(%Canvas{} = canvas) do
-      for y <- 0..(canvas.h - 1) do
-        String.slice(canvas.data, offset(canvas, 0, y), canvas.w)
-      end
-    end
-
-    def print(%Canvas{} = canvas) do
-      for row <- rows(canvas) do
-        IO.puts(row)
-      end
-
+      l = byte_size(pixel)
+      max_w = min(l, canvas.w - x)
+      {_ignore, tail} = String.split_at(rest, max_w)
+      {pixel, _ignore} = String.split_at(pixel, max_w)
+      %Pat{canvas | data: to_string([head, pixel, tail])}
+    else
       canvas
     end
-
-    def transform(canvas, operations) when is_list(operations) do
-      Enum.reduce(operations, canvas, &transform(&2, &1))
-    end
-
-    def transform(canvas, :hflip) do
-      data = rows(canvas) |> Enum.reverse() |> to_string
-      %Canvas{canvas | data: data}
-    end
-
-    def transform(canvas, :vflip) do
-      data = rows(canvas) |> Enum.map(&String.reverse/1) |> to_string
-      %Canvas{canvas | data: data}
-    end
-
-    def transform(canvas, :r180) do
-      transform(canvas, [:hflip, :vflip])
-    end
-
-    def transform(canvas, :rcw) do
-      transform(canvas, [:rccw, :r180])
-    end
-
-    def transform(canvas, :rccw) do
-      # rotate counter clock wise
-      data =
-        Canvas.rows(canvas)
-        |> Enum.map(&String.split(&1, "", trim: true))
-        |> transpose()
-        |> Enum.reverse()
-        |> to_string()
-
-      %Canvas{canvas | w: canvas.h, h: canvas.w, data: data}
-    end
-
-    defp transpose([[] | _]), do: []
-    defp transpose(m), do: [Enum.map(m, &hd/1) | transpose(Enum.map(m, &tl/1))]
   end
+
+  def set(%Pat{} = canvas, x, y, %Pat{} = source) do
+    source_rows = rows(source)
+
+    for dy <- 0..(source.h - 1), reduce: canvas do
+      canvas -> set(canvas, x, y + dy, Enum.at(source_rows, dy))
+    end
+  end
+
+  defp offset(%Pat{} = canvas, x, y), do: canvas.w * y + x
+
+  def rows(%Pat{} = canvas) do
+    for y <- 0..(canvas.h - 1) do
+      String.slice(canvas.data, offset(canvas, 0, y), canvas.w)
+    end
+  end
+
+  def print(%Pat{} = canvas) do
+    for row <- rows(canvas) do
+      IO.puts(row)
+    end
+
+    canvas
+  end
+
+  def transform(canvas, operations) when is_list(operations) do
+    Enum.reduce(operations, canvas, &transform(&2, &1))
+  end
+
+  def transform(canvas, :hflip) do
+    data = rows(canvas) |> Enum.reverse() |> to_string
+    %Pat{canvas | data: data}
+  end
+
+  def transform(canvas, :vflip) do
+    data = rows(canvas) |> Enum.map(&String.reverse/1) |> to_string
+    %Pat{canvas | data: data}
+  end
+
+  def transform(canvas, :r180) do
+    transform(canvas, [:hflip, :vflip])
+  end
+
+  def transform(canvas, :rcw) do
+    transform(canvas, [:rccw, :r180])
+  end
+
+  def transform(canvas, :rccw) do
+    # rotate counter clock wise
+    data =
+      Canvas.rows(canvas)
+      |> Enum.map(&String.split(&1, "", trim: true))
+      |> transpose()
+      |> Enum.reverse()
+      |> to_string()
+
+    %Pat{canvas | w: canvas.h, h: canvas.w, data: data}
+  end
+
+  defp transpose([[] | _]), do: []
+  defp transpose(m), do: [Enum.map(m, &hd/1) | transpose(Enum.map(m, &tl/1))]
 
   defmodule Font do
     @fonts %{
@@ -101,7 +96,6 @@ defmodule Pat do
 
     defstruct name: nil, height: nil, glyphs: %{}, stride: nil
 
-    alias Pat.Canvas
     alias __MODULE__, as: Font
 
     @doc """
@@ -163,7 +157,7 @@ defmodule Pat do
       {w, font.height}
     end
 
-    def render(%Font{} = font, %Canvas{} = canvas, text, x, y) do
+    def render(%Font{} = font, %Pat{} = canvas, text, x, y) do
       for g <- String.graphemes(text), reduce: {x, canvas} do
         {x, canvas} ->
           c = glyph(font, g)
