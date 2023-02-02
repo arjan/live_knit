@@ -54,8 +54,6 @@ defmodule LiveKnitWeb.Live.Analyze do
   end
 
   def handle_info({:serial_in, "S:" <> data}, socket) do
-    IO.inspect(data, label: "data")
-
     [time | values] = data |> String.trim() |> String.split(" ") |> Enum.map(&String.to_integer/1)
 
     socket = push_event(socket, "datapoint", %{time: time, value: values})

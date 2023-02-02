@@ -116,7 +116,7 @@ defmodule LiveKnit.Control do
 
   def handle_info({:serial_in, data}, %State{knitting: true} = state) do
     state =
-      Machine.interpret_serial(state.machine, data)
+      Machine.interpret_serial(state.machine, String.trim(data))
       |> handle_machine_response(state)
 
     {:noreply, state}
