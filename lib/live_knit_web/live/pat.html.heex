@@ -4,7 +4,7 @@
     <div class="col-3">
       <div class={"knitting future"}>
         <%= for row <- Pat.rows(@canvas) do %>
-          <PatternRow.row row={row} />
+          <.row row={row} />
         <% end %>
       </div>
 

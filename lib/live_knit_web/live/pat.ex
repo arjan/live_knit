@@ -3,7 +3,7 @@ defmodule LiveKnitWeb.Live.Pat do
 
   use LiveKnitWeb, :live_view
 
-  alias LiveKnitWeb.Components.{PatternRow}
+  import LiveKnitWeb.Components.ComponentLibrary
 
   @initial """
   #  font = Pat.Font.load(:sigi5b, fg: "X", bg: " ", stride: 1)

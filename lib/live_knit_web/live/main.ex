@@ -2,7 +2,8 @@ defmodule LiveKnitWeb.Live.Main do
   use LiveKnitWeb, :live_view
 
   alias LiveKnit.{Control, Serial, SerialManager}
-  alias LiveKnitWeb.Components.{PatternRow, Settings, DebugPanel}
+  alias LiveKnitWeb.Components.{Settings, DebugPanel}
+  import LiveKnitWeb.Components.ComponentLibrary
 
   def mount(_params, _session, socket) do
     if connected?(socket) do
