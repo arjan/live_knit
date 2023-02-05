@@ -56,13 +56,15 @@ defmodule PatTest do
     end
 
     test "render" do
-      font = Font.load(:sigi5c, fg: "X", bg: " ", stride: 1)
+      font = Font.load(:sigi5b, fg: "X", bg: " ", stride: 1)
 
-      string = "arjan"
+      string = "hello there"
       {w, h} = Font.measure(font, string)
 
       target = Pat.new(w, h, " ")
       target = Font.render(font, target, string, 0, 0)
+
+      Pat.print(target)
 
       assert " XX  XXX     X  XX  X  X" <> _ = target.data
     end

@@ -11,9 +11,11 @@
     </div>
 
     <div class={"knitting history #{knitting_size_class(@control.settings.width)}"}>
+
       <%= for {row, index} <- Enum.with_index(@control.history) do %>
           <PatternRow.row row={row} current={index == 0} />
-          <% end %>
+      <% end %>
+
     </div>
   </div>
 
@@ -104,7 +106,10 @@
 
     <details open={@pattern_open}>
       <summary phx-click="toggle-pattern">Pattern settings</summary>
+
+
     <.live_component id="settings" module={Settings} settings={@control.settings} disabled={@control.knitting} />
+
     </details>
 
     <.live_component id="debugging" module={DebugPanel} disabled={!@control.knitting} />

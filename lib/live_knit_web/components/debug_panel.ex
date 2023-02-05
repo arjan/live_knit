@@ -6,10 +6,6 @@ defmodule LiveKnitWeb.Components.DebugPanel do
     {:ok, socket}
   end
 
-  def handle_event("form-change", _attrs, socket) do
-    {:noreply, socket}
-  end
-
   def handle_event("toggle-debug", attrs, socket) do
     socket = assign(socket, :debug, attrs["value"] == "on")
     {:noreply, socket}

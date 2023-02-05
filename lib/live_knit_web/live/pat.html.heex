@@ -1,6 +1,6 @@
 <div>
 
-  <div row="row">
+  <div class="row">
     <div class="col-3">
       <div class={"knitting future"}>
         <%= for row <- Pat.rows(@canvas) do %>
@@ -12,7 +12,7 @@
 
     <div class="col-6">
       <.form for={:form} phx-change="update" phx-debounce="500">
-      <textarea class="code form-control" name="code" id="code" rows={min(10, length(String.split(@code, "\n")))}><%= @code %></textarea>
+      <textarea class="code form-control" name="code" id="code" rows={max(10, length(String.split(@code, "\n")))}><%= @code %></textarea>
       </.form>
     </div>
   </div>

@@ -5,9 +5,20 @@ defmodule LiveKnitWeb.Live.Pat do
 
   alias LiveKnitWeb.Components.{PatternRow}
 
+  @initial """
+  #  font = Pat.Font.load(:sigi5b, fg: "X", bg: " ", stride: 1)
+
+  string = "hello there"
+  #  {w, h} = Pat.Font.measure(font, string)
+  {w, h} = {20, 10}
+  target = Pat.new(w, h, " ")
+  #  target = Pat.Font.render(font, target, string, 0, 0)
+  """
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {:ok, eval("", socket)}
+    socket = assign(socket, :canvas, Pat.new(10, 10, "1"))
+    {:ok, eval(@initial, socket)}
   end
 
   @impl Phoenix.LiveView
@@ -24,6 +35,8 @@ defmodule LiveKnitWeb.Live.Pat do
           {canvas, nil}
 
         {:error, message} ->
+          IO.inspect(message, label: "message")
+
           {socket.assigns.canvas, message}
       end
 
