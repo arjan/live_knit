@@ -5,21 +5,19 @@ defmodule LiveKnitWeb.Live.Movie do
 
   alias LiveKnit.Serial
 
+  @cursor_range 1024
+  @num_frames 11
+  @start_frame 15
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Serial.subscribe()
-
-      :timer.send_interval(50, self(), :fake_frame)
     end
 
-    socket = assign(socket, :frame, 0)
+    socket = assign(socket, :frame, @start_frame)
     {:ok, socket}
   end
-
-  @cursor_range 1024
-  @num_frames 11
-  @start_frame 15
 
   @impl Phoenix.LiveView
   def handle_info({:serial_in, "C:" <> data}, socket) do
@@ -28,8 +26,8 @@ defmodule LiveKnitWeb.Live.Movie do
     {:noreply, socket |> assign(:frame, frame)}
   end
 
-  def handle_info(:fake_frame, socket) do
-    {:noreply, socket |> assign(:frame, @start_frame + :rand.uniform(@num_frames))}
+  def handle_info({:serial_in, _}, socket) do
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
