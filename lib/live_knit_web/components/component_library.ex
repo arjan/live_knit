@@ -1,4 +1,4 @@
-defmodule LiveKnitWeb.Components.PatternRow do
+defmodule LiveKnitWeb.Components.ComponentLibrary do
   use LiveKnitWeb, :component
 
   def row(assigns) do

@@ -1,0 +1,23 @@
+<div>
+
+  <div class="row">
+    <div class="col-3">
+      <div class={"knitting future"}>
+        <%= for row <- Pat.rows(@canvas) do %>
+          <.row row={row} />
+        <% end %>
+      </div>
+
+    </div>
+
+    <div class="col-6">
+      <.form for={:form} phx-change="update" phx-debounce="500">
+      <textarea class="code form-control" name="code" id="code" rows={max(10, length(String.split(@code, "\n")))}><%= @code %></textarea>
+      </.form>
+    </div>
+  </div>
+
+  <%= if @error_message do %>
+    <div className="alert alert-danger"><%= @error_message %></div>
+  <% end %>
+</div>

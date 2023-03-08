@@ -141,6 +141,10 @@ pre.data-area, pre.data-area code {
   margin: -1rem 0 2rem;
 }
 
+textarea.code {
+  font-family: monospace;
+}
+
 /* LiveView specific classes for your customization */
 .phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {
@@ -243,4 +247,11 @@ pre.data-area, pre.data-area code {
   100% {
     opacity: 0;
   }
+}
+
+img.movie {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
