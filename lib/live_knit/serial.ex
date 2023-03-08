@@ -25,7 +25,7 @@ defmodule LiveKnit.Serial do
       :ok ->
         Nerves.UART.configure(pid,
           framing: {Nerves.UART.Framing.Line, separator: "\n"},
-          rx_framing_timeout: 1000
+          rx_framing_timeout: 100
         )
 
         {:ok, %State{pid: pid, port: port}}
