@@ -72,7 +72,7 @@ defmodule Pat do
       |> to_string()
 
     if target.w * target.h != String.length(data) do
-      raise RuntimeError, "Non-rectangular pattern in Pat.from_string"
+      raise RuntimeError, "Non-rectangular pattern in Pat.overlay"
     end
 
     %{target | data: data}
@@ -228,6 +228,38 @@ defmodule Pat do
     source = source |> repeat_h(times)
 
     target |> overlay(source, 0, target.h - source.h)
+  end
+
+  def concat_h([first | rest] = all) do
+    for pat <- rest do
+      if pat.h != first.h do
+        raise RuntimeError, "Pat.concat_h: height #{pat.h} != #{first.h}"
+      end
+    end
+
+    [first_row | _] =
+      pat_rows =
+      Enum.map(all, &rows/1)
+      |> transpose()
+
+    data =
+      pat_rows
+      |> to_string()
+
+    %Pat{data: data, h: first.h, w: String.length(to_string(first_row))}
+  end
+
+  def concat_v([first | rest] = all) do
+    for pat <- rest do
+      if pat.w != first.w do
+        raise RuntimeError, "Pat.concat_v: width #{pat.w} != #{first.w}"
+      end
+    end
+
+    h = Enum.reduce(all, 0, &(&1.h + &2))
+    data = Enum.map(all, &rows/1) |> to_string()
+
+    %Pat{data: data, h: h, w: first.w}
   end
 
   defimpl String.Chars do

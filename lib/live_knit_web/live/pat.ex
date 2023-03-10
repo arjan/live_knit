@@ -26,8 +26,6 @@ defmodule LiveKnitWeb.Live.Pat do
     {:noreply, eval(code, socket)}
   end
 
-  @error_canvas Pat.Font.render(Pat.Font.load(:sigi5), Pat.new(20, 10), "error", 0, 0)
-
   defp eval(code, socket) do
     {canvas, error_message} =
       case Pat.Dsl.eval(code) do

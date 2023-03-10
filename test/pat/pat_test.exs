@@ -124,4 +124,18 @@ defmodule PatTest do
     assert "ABABABABAB\nBABABABABA\nAB      BA\nBA      AB\nAB      BA\nBA      AB\nAB      BA\nBA      AB\nBABABABABA\nABABABABAB" =
              target |> to_string
   end
+
+  test "concat_h" do
+    target = Pat.concat_h([Pat.new(10, 10, "X"), Pat.new(5, 10, "Y"), Pat.new(5, 10, "X")])
+    assert target.w == 20
+    assert target.h == 10
+
+    assert "XXXXXXXXXXYYYYYXXXXX" <> _ = target.data
+  end
+
+  test "concat_v" do
+    target = Pat.concat_v([Pat.new(10, 10, "X"), Pat.new(10, 1, "."), Pat.new(10, 4, "Y")])
+    assert target.h == 15
+    assert target.w == 10
+  end
 end
