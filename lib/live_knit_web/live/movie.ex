@@ -26,7 +26,7 @@ defmodule LiveKnitWeb.Live.Movie do
     {:noreply, socket |> assign(:frame, frame)}
   end
 
-  def handle_info({:serial_in, _}, socket) do
+  def handle_info(_, socket) do
     {:noreply, socket}
   end
 

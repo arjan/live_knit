@@ -1,8 +1,6 @@
 defmodule PatTest do
   use ExUnit.Case
 
-  alias Pat.Font
-
   describe "canvas" do
     test "new canvas" do
       c = Pat.new(2, 2) |> Pat.set(0, 0, "1") |> Pat.set(1, 1, "1")
@@ -41,32 +39,89 @@ defmodule PatTest do
     end
   end
 
-  describe "font" do
-    test "load" do
-      assert_raise RuntimeError, fn -> Font.load(:x) end
+  test "from_string / to_string" do
+    assert %Pat{w: 2, h: 2} = pat = Pat.from_string("X \n X")
+    assert "X  X" = pat.data
+  end
 
-      assert font = %Font{} = Font.load(:sigi5)
-      assert %Pat{} = font.glyphs["A"]
+  test "new_text" do
+    target = Pat.new_text("hello there", font: :sigi5b)
+
+    assert "XX  XX  XXXXXX  XX      XX       XXXX " <> _ = target.data
+  end
+
+  test "repeat_h" do
+    assert %Pat{data: "X X X X ", w: 8, h: 1} = Pat.from_string("X ") |> Pat.repeat_h(4)
+    # Pat.from_string("XX \nX X") |> Pat.repeat_h(10) |> IO.puts()
+  end
+
+  test "repeat_v" do
+    assert %Pat{data: "X X X X X X ", w: 1, h: 12} = Pat.from_string("X\n ") |> Pat.repeat_v(6)
+
+    # Pat.from_string("XX \nX X") |> Pat.repeat_v(10) |> Pat.repeat_h(10) |> IO.puts()
+  end
+
+  test "overlay" do
+    #  Pat.new(4, 4, " ")
+    target = Pat.from_string("aaaa\nbbbb\ncccc\ndddd")
+    source = Pat.new(2, 2, "X")
+
+    target = target |> Pat.overlay(source, 1, 1)
+
+    assert "aaaa\nbXXb\ncXXc\ndddd" = to_string(target)
+  end
+
+  test "overlay 2" do
+    target = Pat.from_string("aaaa\nbbbb\ncccc\ndddd")
+    source = Pat.new(4, 1, "X")
+
+    target = target |> Pat.overlay(source, 0, 0)
+
+    assert "XXXX\nbbbb\ncccc\ndddd" = to_string(target)
+  end
+
+  test "overlay edge cases" do
+    target = Pat.from_string("XXXXXXXX")
+    source = Pat.from_string("YYYYYYYY")
+
+    assert "YYYYYYYY" = Pat.overlay(target, source, 0, 0) |> to_string()
+    assert "XXXXYYYY" = Pat.overlay(target, source, 4, 0) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, 8, 0) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, 10, 0) |> to_string()
+
+    assert "YYYYYYXX" = Pat.overlay(target, source, -2, 0) |> to_string()
+    assert "YXXXXXXX" = Pat.overlay(target, source, -7, 0) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, -8, 0) |> to_string()
+  end
+
+  test "overlay w/ callback" do
+    target = Pat.from_string("XXXXXXXX")
+    source = Pat.from_string("YYYYYYYY")
+
+    overlay_resolve = fn a, b ->
+      send(self(), {:overlay_resolve, a, b})
+      "12345678"
     end
 
-    test "measure" do
-      font = Font.load(:sigi5)
-      assert {5, 5} = Font.measure(font, "A")
-      assert {11, 5} = Font.measure(font, "AA")
-    end
+    assert "XXXXXXXX" = Pat.overlay(target, source, 8, 0, overlay_resolve) |> to_string()
+    refute_receive({:overlay_resolve, _, _})
 
-    test "render" do
-      font = Font.load(:sigi5b, fg: "X", bg: " ", stride: 1)
+    assert "XXXX1234" = Pat.overlay(target, source, 4, 0, overlay_resolve) |> to_string()
+    assert_receive({:overlay_resolve, "XXXX", "YYYY"})
+  end
 
-      string = "hello there"
-      {w, h} = Font.measure(font, string)
+  test "border" do
+    target = Pat.new(10, 10, " ")
+    border = Pat.from_string("AB\nBA")
 
-      target = Pat.new(w, h, " ")
-      target = Font.render(font, target, string, 0, 0)
+    target = target |> Pat.border(border, flip: false)
 
-      Pat.print(target)
+    assert "ABABABABAB\nBABABABABA\nAB      AB\nBA      BA\nAB      AB\nBA      BA\nAB      AB\nBA      BA\nABABABABAB\nBABABABABA" =
+             target |> to_string
 
-      assert " XX  XXX     X  XX  X  X" <> _ = target.data
-    end
+    target = target |> Pat.border(border, flip: true)
+
+    assert "ABABABABAB\nBABABABABA\nAB      BA\nBA      AB\nAB      BA\nBA      AB\nAB      BA\nBA      AB\nBABABABABA\nABABABABAB" =
+             target |> to_string
   end
 end
