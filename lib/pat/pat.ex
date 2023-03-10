@@ -16,14 +16,36 @@ defmodule Pat do
     %Pat{data: data, w: w, h: h}
   end
 
+  def new(w, h, pixel \\ "0") when is_binary(pixel) and byte_size(pixel) == 1 do
+    data = to_string(for _ <- 1..w, _ <- 1..h, do: pixel)
+    %Pat{w: w, h: h, data: data}
+  end
+
+  def new_text(text, opts \\ []) do
+    font_name = Keyword.get(opts, :font, :sigi5b)
+
+    font =
+      Font.load(font_name, fg: opts[:fg] || "X", bg: opts[:bg] || " ", stride: opts[:stride] || 2)
+
+    {w, h} = Font.measure(font, text)
+
+    target = Pat.new(w, h, " ")
+    Font.render(font, target, text, 0, 0)
+  end
+
   @doc """
   Overlay one pat on top of the other, clipping within the dimensions of the target pat.
 
   A resolve function can be given to customize the overlay algorithm
   on a line-by-line basis. For each "conflict, where the target would
   be overwritten by the source, the overlay function is called.
+
+  The position can be either an `{x, y}` tuple or one of `:left`,
+  `:right`, `:top`, `:bottom`, `:top_left`, `:top_right`,
+  `:bottom_left`, `:bottom_right`.
   """
-  def overlay(target, source, x, y, resolve_fn \\ nil) do
+  def overlay(target, source, pos, resolve_fn \\ nil) do
+    {x, y} = overlay_pos(pos, target, source)
     tr = rows(target)
 
     pre = Enum.slice(tr, 0, y)
@@ -78,22 +100,27 @@ defmodule Pat do
     %{target | data: data}
   end
 
-  def new(w, h, pixel \\ "0") when is_binary(pixel) and byte_size(pixel) == 1 do
-    data = to_string(for _ <- 1..w, _ <- 1..h, do: pixel)
-    %Pat{w: w, h: h, data: data}
-  end
+  defp overlay_pos(:center, target, source),
+    do: {div(target.w - source.w, 2), div(target.h - source.h, 2)}
 
-  def new_text(text, opts \\ []) do
-    font_name = Keyword.get(opts, :font, :sigi5b)
+  defp overlay_pos(:top, target, source),
+    do: {div(target.w - source.w, 2), 0}
 
-    font =
-      Font.load(font_name, fg: opts[:fg] || "X", bg: opts[:bg] || " ", stride: opts[:stride] || 2)
+  defp overlay_pos(:bottom, target, source),
+    do: {div(target.w - source.w, 2), target.h - source.h}
 
-    {w, h} = Font.measure(font, text)
+  defp overlay_pos(:left, target, source),
+    do: {0, div(target.h - source.h, 2)}
 
-    target = Pat.new(w, h, " ")
-    Font.render(font, target, text, 0, 0)
-  end
+  defp overlay_pos(:right, target, source),
+    do: {target.w - source.w, div(target.h - source.h, 2)}
+
+  defp overlay_pos(:top_left, _target, _source), do: {0, 0}
+  defp overlay_pos(:top_right, target, source), do: {target.w - source.w, 0}
+  defp overlay_pos(:bottom_left, target, source), do: {0, target.h - source.h}
+  defp overlay_pos(:bottom_right, target, source), do: {target.w - source.w, target.h - source.h}
+
+  defp overlay_pos({x, y}, _target, _source), do: {x, y}
 
   def repeat_h(%Pat{} = pat, times) do
     data =
@@ -206,28 +233,28 @@ defmodule Pat do
     times = ceil(target.h / source.h)
     source = source |> repeat_v(times)
 
-    target |> overlay(source, 0, 0)
+    target |> overlay(source, {0, 0})
   end
 
   def border_right(target, source) do
     times = ceil(target.h / source.h)
     source = source |> repeat_v(times)
 
-    target |> overlay(source, target.w - source.w, 0)
+    target |> overlay(source, {target.w - source.w, 0})
   end
 
   def border_top(target, source) do
     times = ceil(target.w / source.w)
     source = source |> repeat_h(times)
 
-    target |> overlay(source, 0, 0)
+    target |> overlay(source, {0, 0})
   end
 
   def border_bottom(target, source) do
     times = ceil(target.w / source.w)
     source = source |> repeat_h(times)
 
-    target |> overlay(source, 0, target.h - source.h)
+    target |> overlay(source, {0, target.h - source.h})
   end
 
   def concat_h([first | rest] = all) do
@@ -249,6 +276,10 @@ defmodule Pat do
     %Pat{data: data, h: first.h, w: String.length(to_string(first_row))}
   end
 
+  def concat_h(target, source) do
+    concat_h([target, source])
+  end
+
   def concat_v([first | rest] = all) do
     for pat <- rest do
       if pat.w != first.w do
@@ -261,6 +292,24 @@ defmodule Pat do
 
     %Pat{data: data, h: h, w: first.w}
   end
+
+  def concat_v(target, source) do
+    concat_v([target, source])
+  end
+
+  def pad(%Pat{} = pat, amount, pixel \\ "0") do
+    new(pat.w + 2 * amount, pat.h + 2 * amount, pixel) |> overlay(pat, {amount, amount})
+  end
+
+  def pad_top(%Pat{} = pat, amount, pixel \\ "0"), do: new(pat.w, amount, pixel) |> concat_v(pat)
+
+  def pad_left(%Pat{} = pat, amount, pixel \\ "0"), do: new(amount, pat.h, pixel) |> concat_h(pat)
+
+  def pad_bottom(%Pat{} = pat, amount, pixel \\ "0"),
+    do: pat |> concat_v(new(pat.w, amount, pixel))
+
+  def pad_right(%Pat{} = pat, amount, pixel \\ "0"),
+    do: pat |> concat_h(new(amount, pat.h, pixel))
 
   defimpl String.Chars do
     def to_string(pat) do

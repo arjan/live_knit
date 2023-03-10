@@ -66,16 +66,35 @@ defmodule PatTest do
     target = Pat.from_string("aaaa\nbbbb\ncccc\ndddd")
     source = Pat.new(2, 2, "X")
 
-    target = target |> Pat.overlay(source, 1, 1)
+    output = target |> Pat.overlay(source, {1, 1})
+    assert "aaaa\nbXXb\ncXXc\ndddd" = to_string(output)
+  end
 
-    assert "aaaa\nbXXb\ncXXc\ndddd" = to_string(target)
+  test "overlay positions" do
+    target = Pat.from_string("aaaa\nbbbb\ncccc\ndddd")
+    source = Pat.new(2, 2, "X")
+
+    output = target |> Pat.overlay(source, :center)
+    assert "aaaa\nbXXb\ncXXc\ndddd" = to_string(output)
+
+    output = target |> Pat.overlay(source, :top)
+    assert "aXXa\nbXXb\ncccc\ndddd" = to_string(output)
+
+    output = target |> Pat.overlay(source, :bottom)
+    assert "aaaa\nbbbb\ncXXc\ndXXd" = to_string(output)
+
+    output = target |> Pat.overlay(source, :left)
+    assert "aaaa\nXXbb\nXXcc\ndddd" = to_string(output)
+
+    output = target |> Pat.overlay(source, :right)
+    assert "aaaa\nbbXX\nccXX\ndddd" = to_string(output)
   end
 
   test "overlay 2" do
     target = Pat.from_string("aaaa\nbbbb\ncccc\ndddd")
     source = Pat.new(4, 1, "X")
 
-    target = target |> Pat.overlay(source, 0, 0)
+    target = target |> Pat.overlay(source, {0, 0})
 
     assert "XXXX\nbbbb\ncccc\ndddd" = to_string(target)
   end
@@ -84,14 +103,14 @@ defmodule PatTest do
     target = Pat.from_string("XXXXXXXX")
     source = Pat.from_string("YYYYYYYY")
 
-    assert "YYYYYYYY" = Pat.overlay(target, source, 0, 0) |> to_string()
-    assert "XXXXYYYY" = Pat.overlay(target, source, 4, 0) |> to_string()
-    assert "XXXXXXXX" = Pat.overlay(target, source, 8, 0) |> to_string()
-    assert "XXXXXXXX" = Pat.overlay(target, source, 10, 0) |> to_string()
+    assert "YYYYYYYY" = Pat.overlay(target, source, {0, 0}) |> to_string()
+    assert "XXXXYYYY" = Pat.overlay(target, source, {4, 0}) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, {8, 0}) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, {10, 0}) |> to_string()
 
-    assert "YYYYYYXX" = Pat.overlay(target, source, -2, 0) |> to_string()
-    assert "YXXXXXXX" = Pat.overlay(target, source, -7, 0) |> to_string()
-    assert "XXXXXXXX" = Pat.overlay(target, source, -8, 0) |> to_string()
+    assert "YYYYYYXX" = Pat.overlay(target, source, {-2, 0}) |> to_string()
+    assert "YXXXXXXX" = Pat.overlay(target, source, {-7, 0}) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, {-8, 0}) |> to_string()
   end
 
   test "overlay w/ callback" do
@@ -103,10 +122,10 @@ defmodule PatTest do
       "12345678"
     end
 
-    assert "XXXXXXXX" = Pat.overlay(target, source, 8, 0, overlay_resolve) |> to_string()
+    assert "XXXXXXXX" = Pat.overlay(target, source, {8, 0}, overlay_resolve) |> to_string()
     refute_receive({:overlay_resolve, _, _})
 
-    assert "XXXX1234" = Pat.overlay(target, source, 4, 0, overlay_resolve) |> to_string()
+    assert "XXXX1234" = Pat.overlay(target, source, {4, 0}, overlay_resolve) |> to_string()
     assert_receive({:overlay_resolve, "XXXX", "YYYY"})
   end
 
@@ -131,11 +150,30 @@ defmodule PatTest do
     assert target.h == 10
 
     assert "XXXXXXXXXXYYYYYXXXXX" <> _ = target.data
+
+    Pat.new(2, 2, "1")
+    |> Pat.concat_h(Pat.new(2, 2, "0"))
+    |> Pat.concat_v(Pat.new(4, 2, "2"))
+    |> IO.puts()
   end
 
   test "concat_v" do
     target = Pat.concat_v([Pat.new(10, 10, "X"), Pat.new(10, 1, "."), Pat.new(10, 4, "Y")])
     assert target.h == 15
     assert target.w == 10
+  end
+
+  test "pad" do
+    source = Pat.new(2, 2, "1")
+    output = Pat.pad(source, 2)
+    assert output.w == 6
+    assert output.h == 6
+  end
+
+  test "pad_left right etc" do
+    assert "00\n11\n11" = Pat.new(2, 2, "1") |> Pat.pad_top(1, "0") |> to_string()
+    assert "11\n11\n00" = Pat.new(2, 2, "1") |> Pat.pad_bottom(1, "0") |> to_string()
+    assert "011\n011" = Pat.new(2, 2, "1") |> Pat.pad_left(1, "0") |> to_string()
+    assert "110\n110" = Pat.new(2, 2, "1") |> Pat.pad_right(1, "0") |> to_string()
   end
 end
