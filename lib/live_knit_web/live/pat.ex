@@ -109,4 +109,8 @@ defmodule LiveKnitWeb.Live.Pat do
     |> assign(:code, pattern.code)
     |> assign(:form, %{"id" => to_string(pattern.id), "title" => pattern.title})
   end
+
+  def knitting_size_class(n) when n < 48, do: "large"
+  def knitting_size_class(n) when n < 128, do: "medium"
+  def knitting_size_class(_), do: "small"
 end

@@ -25,11 +25,11 @@ defmodule Pat do
     font_name = Keyword.get(opts, :font, :sigi5b)
 
     font =
-      Font.load(font_name, fg: opts[:fg] || "X", bg: opts[:bg] || " ", stride: opts[:stride] || 2)
+      Font.load(font_name, fg: opts[:fg] || "0", bg: opts[:bg] || "1", stride: opts[:stride] || 1)
 
     {w, h} = Font.measure(font, text)
 
-    target = Pat.new(w, h, " ")
+    target = Pat.new(w, h, "1")
     Font.render(font, target, text, 0, 0)
   end
 

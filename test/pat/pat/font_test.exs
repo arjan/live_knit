@@ -19,6 +19,8 @@ defmodule Pat.FontTest do
 
     test "render" do
       font = Font.load(:sigi5b, fg: "X", bg: " ", stride: 2)
+      # , fg: "X", bg: " ", stride: 2)
+      font = Font.load(:sigi5b)
 
       string = "hello there"
       {w, h} = Font.measure(font, string)

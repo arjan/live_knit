@@ -79,11 +79,11 @@ defmodule LiveKnit.Settings do
   end
 
   defp image_rows(%Settings{double_y: true} = settings) do
-    Enum.flat_map(settings.image, &[&1, &1])
+    Enum.flat_map(settings.image, &[&1, &1]) |> Enum.reverse()
   end
 
   defp image_rows(settings) do
-    settings.image
+    settings.image |> Enum.reverse()
   end
 
   defp to_pattern_row(row, settings) do
