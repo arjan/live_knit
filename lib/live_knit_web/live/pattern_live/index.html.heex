@@ -1,0 +1,41 @@
+<h1>Listing Patterns</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.pattern_index_path(@socket, :index)}>
+    <.live_component
+      module={LiveKnitWeb.PatternLive.FormComponent}
+      id={@pattern.id || :new}
+      title={@page_title}
+      action={@live_action}
+      pattern={@pattern}
+      return_to={Routes.pattern_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Code</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="patterns">
+    <%= for pattern <- @patterns do %>
+      <tr id={"pattern-#{pattern.id}"}>
+        <td><%= pattern.title %></td>
+        <td><%= pattern.code %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.pattern_show_path(@socket, :show, pattern) %></span>
+          <span><%= live_patch "Edit", to: Routes.pattern_index_path(@socket, :edit, pattern) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: pattern.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Pattern", to: Routes.pattern_index_path(@socket, :new) %></span>

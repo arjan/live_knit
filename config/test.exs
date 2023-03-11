@@ -7,6 +7,10 @@ config :live_knit, LiveKnitWeb.Endpoint,
   secret_key_base: "41gecS9reNi4dVHBs3T+BHe98fm2uCGfZ3rb2aZW+1/JpOpleyabQu3pa9iAItev",
   server: false
 
+config :live_knit, LiveKnit.Repo,
+  database: "test.db",
+  pool: Ecto.Adapters.SQL.Sandbox
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 

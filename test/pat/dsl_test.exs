@@ -4,7 +4,7 @@ defmodule Pat.DslTest do
   test "dsl" do
     result =
       Pat.Dsl.eval("""
-      Pat.new(10, 10)
+      new(10, 10)
       """)
 
     assert {:ok, %Pat{w: 10, h: 10}} = result

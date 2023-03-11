@@ -1,4 +1,5 @@
-pre.data-area, pre.data-area code {
+pre.data-area,
+pre.data-area code {
   overflow: auto;
   max-width: 400px;
 }
@@ -92,7 +93,8 @@ pre.data-area, pre.data-area code {
   background: red;
   position: relative;
 }
-.yarn.color-0 {
+.yarn.color-0,
+.yarn.color-X {
   background: #303030;
   color: white;
 }
@@ -100,7 +102,8 @@ pre.data-area, pre.data-area code {
   background: rgba(0, 255, 0, 0.2);
 }
 
-.yarn.color-1 {
+.yarn.color-1,
+.yarn.color- {
   background: #ffffff;
   color: #303030;
 }

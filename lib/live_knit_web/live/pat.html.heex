@@ -1,23 +1,44 @@
 <div>
-
-  <div class="row">
-    <div class="col-3">
-      <div class={"knitting future"}>
-        <%= for row <- Pat.rows(@canvas) do %>
-          <.row row={row} />
-        <% end %>
-      </div>
-
-    </div>
-
-    <div class="col-6">
+  <div class="row mb-4">
+    <div class="col-10 ">
       <.form for={:form} phx-change="update" phx-debounce="500">
-      <textarea class="code form-control" name="code" id="code" rows={max(10, length(String.split(@code, "\n")))}><%= @code %></textarea>
+        <textarea class="code form-control" name="code" id="code" rows={10}><%= @code %></textarea>
       </.form>
+    </div>
+    <div class="col-2 ">
+      <h5>Patterns</h5>
+      <.form for={:form} phx-change="form">
+        <div class="input-group mb-3">
+          <select name="id" class="custom-select">
+            <option value="">(new pattern)</option>
+            <%= for p <- @patterns do %>
+              <option value={"#{p.id}"} selected={to_string(p.id) == @form["id"]}>
+                <%= p.title %>
+              </option>
+            <% end %>
+          </select>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" name="title" value={@form["title"]} placeholder="Title" />
+        </div>
+      </.form>
+      <button phx-click="pattern-save" class="btn btn-primary">Save</button>
+      <button phx-click="pattern-load" class="btn btn-load">Load</button>
+      <button phx-click="pattern-delete" class="btn btn-load">Delete</button>
     </div>
   </div>
 
   <%= if @error_message do %>
-    <div className="alert alert-danger"><%= @error_message %></div>
+    <div class="alert alert-danger"><%= @error_message %></div>
   <% end %>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="knitting future">
+        <%= for row <- Pat.rows(@canvas) do %>
+          <.row row={row} />
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>

@@ -18,4 +18,19 @@ defmodule LiveKnit.StorageFixtures do
 
     preset
   end
+
+  @doc """
+  Generate a pattern.
+  """
+  def pattern_fixture(attrs \\ %{}) do
+    {:ok, pattern} =
+      attrs
+      |> Enum.into(%{
+        code: "some code",
+        title: "some title"
+      })
+      |> LiveKnit.Storage.create_pattern()
+
+    pattern
+  end
 end

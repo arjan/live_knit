@@ -1,0 +1,31 @@
+<h1>Show Pattern</h1>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.pattern_show_path(@socket, :show, @pattern)}>
+    <.live_component
+      module={LiveKnitWeb.PatternLive.FormComponent}
+      id={@pattern.id}
+      title={@page_title}
+      action={@live_action}
+      pattern={@pattern}
+      return_to={Routes.pattern_show_path(@socket, :show, @pattern)}
+    />
+  </.modal>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @pattern.title %>
+  </li>
+
+  <li>
+    <strong>Code:</strong>
+    <%= @pattern.code %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.pattern_show_path(@socket, :edit, @pattern), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.pattern_index_path(@socket, :index) %></span>

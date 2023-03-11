@@ -9,15 +9,19 @@ defmodule Pat.Dsl do
   @empty Pat.new(10, 10)
 
   def eval(str) do
-    case Dune.eval_string(str, max_reductions: 1_000_000, memory: 10_000_000) do
-      %Dune.Success{value: %Pat{} = pat} ->
-        {:ok, pat}
+    import Pat
 
-      %Dune.Success{} ->
-        {:ok, @empty}
+    try do
+      case Code.eval_string(str, [], __ENV__) do
+        {%Pat{} = pat, _} ->
+          {:ok, pat}
 
-      %Dune.Failure{message: message} ->
-        {:error, message}
+        {_other, _} ->
+          {:ok, @empty}
+      end
+    catch
+      _, m ->
+        {:error, inspect(m)}
     end
   end
 end
