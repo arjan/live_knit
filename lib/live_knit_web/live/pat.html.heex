@@ -6,27 +6,53 @@
       </.form>
     </div>
     <div class="col-2 ">
-      <%= @canvas.w %> x <%= @canvas.h %>
+      <div class="mb-4">
+        <h5>Output</h5>
+        Size: <%= @canvas.w %> x <%= @canvas.h %>
+      </div>
 
-      <h5>Patterns</h5>
-      <.form for={:form} phx-change="form">
-        <div class="input-group mb-3">
-          <select name="id" class="custom-select">
-            <option value="">(new pattern)</option>
-            <%= for p <- @patterns do %>
-              <option value={"#{p.id}"} selected={to_string(p.id) == @form["id"]}>
-                <%= p.title %>
-              </option>
-            <% end %>
-          </select>
-        </div>
-        <div class="input-group mb-3">
-          <input type="text" name="title" value={@form["title"]} placeholder="Title" />
-        </div>
-      </.form>
-      <button phx-click="pattern-save" class="btn btn-primary">Save</button>
-      <button phx-click="pattern-load" class="btn btn-load">Load</button>
-      <button phx-click="pattern-delete" class="btn btn-load">Delete</button>
+      <div class="mb-4">
+        <h5>Patterns</h5>
+        <.form for={:form} phx-change="form">
+          <div class="input-group mb-4">
+            <select name="id" class="form-control">
+              <option value="">(new pattern)</option>
+              <%= for p <- @patterns do %>
+                <option value={"#{p.id}"} selected={to_string(p.id) == @form["id"]}>
+                  <%= p.title %>
+                </option>
+              <% end %>
+            </select>
+          </div>
+          <div class="input-group mb-4">
+            <div class="input-group-prepend">
+              <label class="input-group-text">Title:</label>
+            </div>
+            <input
+              class="form-control"
+              type="text"
+              name="title"
+              value={@form["title"]}
+              placeholder="Title"
+            />
+          </div>
+        </.form>
+      </div>
+      <div class="mb-4">
+        <button phx-click="pattern-save" class="btn btn-primary">Save</button>
+        <button phx-click="pattern-load" class="btn btn-secondary">Load</button>
+        <button phx-click="pattern-delete" class="btn btn-secondary">Delete</button>
+      </div>
+
+      <div class="mb-4">
+        <h5>Load sprite</h5>
+        <%= if !@image_code do %>
+          <input type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload" />
+        <% else %>
+          <textarea><%= @image_code %></textarea>
+          <button phx-click="image-code-reset" class="btn">X</button>
+        <% end %>
+      </div>
     </div>
   </div>
 
@@ -35,7 +61,7 @@
   <% end %>
 
   <div class="row">
-    <div class="col-12">
+    <div class="col-12 pt-5 pb-5 bg-light border knitting-area">
       <div class={"knitting future #{knitting_size_class(@canvas.w)}"}>
         <%= for row <- Pat.rows(@canvas) do %>
           <.row row={row} />

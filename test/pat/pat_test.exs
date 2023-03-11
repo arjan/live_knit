@@ -47,7 +47,7 @@ defmodule PatTest do
   test "new_text" do
     target = Pat.new_text("hello there", font: :sigi5b)
 
-    assert "XX  XX  XXXXXX  XX      XX       XXXX " <> _ = target.data
+    assert "0011001000" <> _ = target.data
   end
 
   test "repeat_h" do
@@ -154,7 +154,8 @@ defmodule PatTest do
     Pat.new(2, 2, "1")
     |> Pat.concat_h(Pat.new(2, 2, "0"))
     |> Pat.concat_v(Pat.new(4, 2, "2"))
-    |> IO.puts()
+
+    #    |> IO.puts()
   end
 
   test "concat_v" do
@@ -178,7 +179,7 @@ defmodule PatTest do
   end
 
   test "invert" do
-    target =    Pat.new(2, 2, "1") |> Pat.invert()
+    target = Pat.new(2, 2, "1") |> Pat.invert()
     assert "0000" = target.data
   end
 end

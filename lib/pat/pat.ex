@@ -220,6 +220,7 @@ defmodule Pat do
   defp transpose(m), do: [Enum.map(m, &hd/1) | transpose(Enum.map(m, &tl/1))]
 
   def border(target, source, opts \\ []) do
+    source = coerce_source(source)
     flip = Keyword.get(opts, :flip, true)
 
     target
@@ -230,6 +231,7 @@ defmodule Pat do
   end
 
   def border_left(target, source) do
+    source = coerce_source(source)
     times = ceil(target.h / source.h)
     source = source |> repeat_v(times)
 
@@ -237,6 +239,7 @@ defmodule Pat do
   end
 
   def border_right(target, source) do
+    source = coerce_source(source)
     times = ceil(target.h / source.h)
     source = source |> repeat_v(times)
 
@@ -244,6 +247,7 @@ defmodule Pat do
   end
 
   def border_top(target, source) do
+    source = coerce_source(source)
     times = ceil(target.w / source.w)
     source = source |> repeat_h(times)
 
@@ -251,6 +255,7 @@ defmodule Pat do
   end
 
   def border_bottom(target, source) do
+    source = coerce_source(source)
     times = ceil(target.w / source.w)
     source = source |> repeat_h(times)
 
@@ -320,6 +325,9 @@ defmodule Pat do
   defp inv("0"), do: "1"
   defp inv("X"), do: " "
   defp inv(" "), do: "X"
+
+  def coerce_source("" <> source), do: from_string(source)
+  def coerce_source(%Pat{} = source), do: source
 
   ###
 

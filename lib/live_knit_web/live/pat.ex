@@ -16,6 +16,7 @@ defmodule LiveKnitWeb.Live.Pat do
       socket
       |> assign(:canvas, Pat.new(10, 10, "1"))
       |> assign(:code, @initial)
+      |> assign(:image_code, nil)
       |> load_data()
       |> eval()
 
@@ -29,6 +30,29 @@ defmodule LiveKnitWeb.Live.Pat do
 
   def handle_event("form", params, socket) do
     {:noreply, socket |> assign(:form, params)}
+  end
+
+  def handle_event("image-data", data_url, socket) do
+    with ["data:image/" <> _, data] <- String.split(data_url, ",", parts: 2),
+         {:ok, data} <- Base.decode64(data),
+         {:ok, pixels} <- Pixels.read(data) do
+      data =
+        LiveKnit.Pattern.from_pixels(pixels)
+        |> Enum.reverse()
+        |> Enum.join("\\n")
+
+      code = "from_string(\"#{data}\")"
+
+      socket = assign(socket, :image_code, code)
+      {:noreply, socket}
+    else
+      _ ->
+        {:noreply, put_flash(socket, :error, "Error while reading image")}
+    end
+  end
+
+  def handle_event("image-code-reset", _, socket) do
+    {:noreply, socket |> assign(:image_code, nil)}
   end
 
   def handle_event("pattern-load", %{}, socket) do
