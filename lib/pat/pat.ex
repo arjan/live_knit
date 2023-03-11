@@ -311,6 +311,18 @@ defmodule Pat do
   def pad_right(%Pat{} = pat, amount, pixel \\ "0"),
     do: pat |> concat_h(new(amount, pat.h, pixel))
 
+  def invert(%Pat{} = pat) do
+    data = pat.data |> String.split("", trim: true) |> Enum.map(&inv/1) |> to_string()
+    %{pat | data: data}
+  end
+
+  defp inv("1"), do: "0"
+  defp inv("0"), do: "1"
+  defp inv("X"), do: " "
+  defp inv(" "), do: "X"
+
+  ###
+
   defimpl String.Chars do
     def to_string(pat) do
       Pat.rows(pat)

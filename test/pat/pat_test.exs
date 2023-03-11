@@ -176,4 +176,9 @@ defmodule PatTest do
     assert "011\n011" = Pat.new(2, 2, "1") |> Pat.pad_left(1, "0") |> to_string()
     assert "110\n110" = Pat.new(2, 2, "1") |> Pat.pad_right(1, "0") |> to_string()
   end
+
+  test "invert" do
+    target =    Pat.new(2, 2, "1") |> Pat.invert()
+    assert "0000" = target.data
+  end
 end
