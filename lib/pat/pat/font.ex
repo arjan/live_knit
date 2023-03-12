@@ -41,8 +41,14 @@ defmodule Pat.Font do
         reduce: %Font{name: data["name"], height: data["height"], stride: stride} do
       font ->
         canvas =
-          for [x, y] <- glyph["coords"], reduce: Pat.new(glyph["width"], font.height, bg) do
-            canvas -> canvas |> Pat.set(x, y, fg)
+          case glyph do
+            %{"coords" => coords} ->
+              for [x, y] <- coords, reduce: Pat.new(glyph["width"], font.height, bg) do
+                canvas -> canvas |> Pat.set(x, y, fg)
+              end
+
+            %{"data" => rows, "width" => width} ->
+              %Pat{data: to_string(Enum.reverse(rows)), w: width, h: font.height} |> Pat.invert()
           end
 
         glyphs = Map.put(font.glyphs, glyph["name"], canvas)

@@ -44,6 +44,12 @@ defmodule PatTest do
     assert "X  X" = pat.data
   end
 
+  test "new_text 2" do
+    target = Pat.new_text("hello there", font: :arcade, stride: 0)
+
+    assert "1111" <> _ = target.data
+  end
+
   test "new_text" do
     target = Pat.new_text("hello there", font: :sigi5b)
 
