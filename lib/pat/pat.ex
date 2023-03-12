@@ -106,8 +106,10 @@ defmodule Pat do
                   {String.slice(source_row, 0..(target.w - x - 1)),
                    String.slice(target_row, x..target.w)}
                 else
-                  {String.slice(source_row, -x..source.w),
-                   String.slice(target_row, 0..(source.w + x))}
+                  t = String.slice(target_row, 0..(source.w + x))
+
+                  {String.slice(source_row, -x..source.w)
+                   |> String.slice(0..(String.length(t) - 1)), t}
                 end
 
               if resolve_fn do
@@ -361,12 +363,12 @@ defmodule Pat do
   def coerce_source("" <> source), do: from_string(source)
   def coerce_source(%Pat{} = source), do: source
 
-  def stretch_h(%Pat{} = pat, fact) do
+  def stretch_v(%Pat{} = pat, fact) do
     rows = rows(pat) |> stretch_rows(fact)
     %{pat | data: to_string(rows), h: length(rows)}
   end
 
-  def stretch_v(%Pat{} = pat, fact) do
+  def stretch_h(%Pat{} = pat, fact) do
     rows =
       rows(pat)
       |> Enum.map(&String.split(&1, "", trim: true))

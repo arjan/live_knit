@@ -120,6 +120,13 @@ defmodule PatTest do
     assert "XXXXXXXX" = Pat.overlay(target, source, {-8, 0}) |> to_string()
   end
 
+  test "overlay edge cases 2" do
+    target = Pat.from_string("XXXX")
+    source = Pat.from_string("YYYYYYYY")
+
+    assert "YYYY" = Pat.overlay(target, source, {-2, 0}) |> to_string()
+  end
+
   test "overlay w/ callback" do
     target = Pat.from_string("XXXXXXXX")
     source = Pat.from_string("YYYYYYYY")
@@ -193,7 +200,7 @@ defmodule PatTest do
   test "stretch" do
     pat =
       Pat.from_string("1010101010")
-      |> Pat.stretch_v(2.8)
+      |> Pat.stretch_h(2.8)
 
     assert "1110001110011100011000111000" = pat.data
   end

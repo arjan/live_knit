@@ -26,14 +26,14 @@ defmodule Pat.Font do
     bg = Keyword.get(opts, :bg, "0")
     stride = Keyword.get(opts, :stride, 1)
 
-    font = @fonts[name]
+    file = Application.app_dir(:live_knit, ["priv", "fonts", "#{name}.json"])
 
-    if font == nil do
+    unless File.exists?(file) do
       raise RuntimeError, "Font not found: #{name}"
     end
 
     data =
-      Application.app_dir(:live_knit, "priv/" <> font)
+      file
       |> File.read!()
       |> Jason.decode!()
 
