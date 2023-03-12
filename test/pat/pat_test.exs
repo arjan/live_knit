@@ -50,6 +50,13 @@ defmodule PatTest do
     assert "0011001000" <> _ = target.data
   end
 
+  test "newtext w/ multiple lines" do
+    target = Pat.new_text("hello\nthere...!", font: :sigi5b, align: :center)
+
+    assert "11110011001000000100111110011111100001111111111001100100111110011111001111100110011111111100000010000011001111100111110011001111111110011001001111100111110011111001100111111111001100100000010000001000000110000111111111111111111111111111111111111111111111111100000010011001000000100000110000001111111001100111001100100111110011001001111111111100110011100000010000011000001100000111111110011001110011001001111100100110011111111111111100111001100100000010011001000000101010100" =
+             target.data
+  end
+
   test "repeat_h" do
     assert %Pat{data: "X X X X ", w: 8, h: 1} = Pat.from_string("X ") |> Pat.repeat_h(4)
     # Pat.from_string("XX \nX X") |> Pat.repeat_h(10) |> IO.puts()
@@ -181,5 +188,22 @@ defmodule PatTest do
   test "invert" do
     target = Pat.new(2, 2, "1") |> Pat.invert()
     assert "0000" = target.data
+  end
+
+  test "stretch" do
+    pat =
+      Pat.from_string("1010101010")
+      |> Pat.stretch_v(2.8)
+
+    assert "1110001110011100011000111000" = pat.data
+  end
+
+  test "double" do
+    pat =
+      Pat.from_string("1")
+      |> Pat.double()
+
+    assert {2, 2} = {pat.w, pat.h}
+    assert "1111" = pat.data
   end
 end

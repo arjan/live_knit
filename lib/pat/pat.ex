@@ -24,13 +24,45 @@ defmodule Pat do
   def new_text(text, opts \\ []) do
     font_name = Keyword.get(opts, :font, :sigi5b)
 
-    font =
-      Font.load(font_name, fg: opts[:fg] || "0", bg: opts[:bg] || "1", stride: opts[:stride] || 1)
+    bg = opts[:bg] || "1"
+    font = Font.load(font_name, fg: opts[:fg] || "0", bg: bg, stride: opts[:stride] || 1)
 
-    {w, h} = Font.measure(font, text)
+    pats =
+      for line <- String.split(text, "\n") do
+        {w, h} = Font.measure(font, line)
 
-    target = Pat.new(w, h, "1")
-    Font.render(font, target, text, 0, 0)
+        target = Pat.new(w, h, "1")
+        Font.render(font, target, line, 0, 0)
+      end
+
+    w = Enum.reduce(pats, 0, &max(&1.w, &2))
+
+    pats
+    |> Enum.map(fn pat ->
+      if pat.w < w do
+        d = w - pat.w
+
+        case opts[:align] do
+          :center ->
+            d1 = div(d, 2)
+            d2 = d - d1
+
+            pat
+            |> pad_left(d1, bg)
+            |> pad_right(d2, bg)
+
+          :right ->
+            pat |> pad_left(d, bg)
+
+          _ ->
+            pat |> pad_right(d, bg)
+        end
+      else
+        pat
+      end
+    end)
+    |> Enum.intersperse(Pat.new(w, Keyword.get(opts, :line_pad, 1), bg))
+    |> concat_v()
   end
 
   @doc """
@@ -328,6 +360,65 @@ defmodule Pat do
 
   def coerce_source("" <> source), do: from_string(source)
   def coerce_source(%Pat{} = source), do: source
+
+  def stretch_h(%Pat{} = pat, fact) do
+    rows = rows(pat) |> stretch_rows(fact)
+    %{pat | data: to_string(rows), h: length(rows)}
+  end
+
+  def stretch_v(%Pat{} = pat, fact) do
+    rows =
+      rows(pat)
+      |> Enum.map(&String.split(&1, "", trim: true))
+      |> transpose()
+      |> stretch_rows(fact)
+      |> transpose()
+
+    %{pat | data: to_string(rows), w: length(hd(rows))}
+  end
+
+  def stretch(%Pat{} = pat, fact) do
+    pat |> stretch_v(fact) |> stretch_h(fact)
+  end
+
+  def double(%Pat{} = pat) do
+    stretch(pat, 2)
+  end
+
+  defp stretch_rows(rows, fact) do
+    fact_int = ceil(fact)
+
+    all_rows = for r <- rows, _ <- 1..fact_int, do: r
+    n_all = length(all_rows)
+
+    to_remove = round(length(rows) * (fact_int - fact))
+
+    if to_remove > 0 do
+      stride = round(n_all / (to_remove + 1))
+
+      remove_indices =
+        Enum.reduce(1..(to_remove - 1), [n_all - stride], fn _, [i | _] = acc ->
+          [i - stride | acc]
+        end)
+        |> Enum.reverse()
+
+      Enum.reduce(remove_indices, all_rows, fn index, rows ->
+        List.delete_at(rows, index)
+      end)
+    else
+      all_rows
+    end
+  end
+
+  def fit(%Pat{} = pat, w, h, opts \\ []) do
+    bg = opts[:bg] || "1"
+    w = w || pat.w
+    h = h || pat.h
+    pos = opts[:pos] || :center
+
+    new(w, h, bg)
+    |> overlay(pat, pos)
+  end
 
   ###
 
