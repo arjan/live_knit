@@ -77,24 +77,33 @@ defmodule Pat do
   `:right`, `:top`, `:bottom`, `:top_left`, `:top_right`,
   `:bottom_left`, `:bottom_right`.
   """
-  def overlay(target, source, pos, resolve_fn \\ nil) do
+  def overlay(target, source, pos, effect \\ nil) do
+    resolve_fn = build_effect(effect)
     {x, y} = overlay_pos(pos, target, source)
     tr = rows(target)
 
-    pre = Enum.slice(tr, 0, y)
-    post = Enum.slice(tr, y + source.h, target.h)
-
-    tr =
-      if y > 0 do
-        Enum.slice(tr, y, y + source.h - 1)
+    {pre, tr, post} =
+      if y >= 0 do
+        {
+          Enum.slice(tr, 0, y),
+          Enum.slice(tr, y, y + source.h),
+          Enum.slice(tr, y + source.h, target.h)
+        }
       else
-        Enum.slice(tr, 0, source.h)
+        {[], Enum.slice(tr, 0, source.h), []}
+      end
+
+    source_rows =
+      if y >= 0 do
+        rows(source)
+      else
+        Enum.slice(rows(source), -y, Enum.count(tr))
       end
 
     data =
       [
         pre,
-        for {target_row, source_row} <- Enum.zip(tr, rows(source)) do
+        for {target_row, source_row} <- Enum.zip(tr, source_rows) do
           [
             if x > 0 do
               String.slice(target_row, 0..(x - 1))
@@ -133,6 +142,23 @@ defmodule Pat do
     end
 
     %{target | data: data}
+  end
+
+  defp build_effect(nil), do: nil
+  defp build_effect(f) when is_function(f, 2), do: f
+
+  defp build_effect(:xor) do
+    fn target, source ->
+      [target |> String.split("", trim: true), source |> String.split("", trim: true)]
+      |> Enum.zip()
+      |> Enum.map(fn
+        {"1", "0"} -> "0"
+        {"0", "1"} -> "0"
+        {"1", "1"} -> "1"
+        {"0", "0"} -> "1"
+      end)
+      |> to_string()
+    end
   end
 
   defp overlay_pos(:center, target, source),
