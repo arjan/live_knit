@@ -1,4 +1,5 @@
 defmodule Pat do
+  @derive Jason.Encoder
   defstruct w: 0, h: 0, data: ""
 
   alias Pat.Font
@@ -25,7 +26,7 @@ defmodule Pat do
     font_name = Keyword.get(opts, :font, :sigi5b)
 
     bg = opts[:bg] || "1"
-    font = Font.load(font_name, fg: opts[:fg] || "0", bg: bg, stride: opts[:stride] || 1)
+    font = Font.load(font_name, fg: opts[:fg] || "0", bg: bg, stride: opts[:stride])
 
     pats =
       for line <- String.split(text, "\n") do
@@ -422,6 +423,26 @@ defmodule Pat do
     |> overlay(pat, pos)
   end
 
+  def fonts_showcase(opts \\ []) do
+    Application.app_dir(:live_knit, ["priv", "fonts", "*.json"])
+    |> Path.wildcard()
+    |> Enum.map(fn filename ->
+      font = Path.basename(filename) |> String.replace(".json", "")
+      font_showcase(font, opts)
+    end)
+    |> concat_v()
+  end
+
+  def font_showcase(font, opts \\ []) do
+    w = opts[:width] || 200
+    p = opts[:p] || 1
+    text = opts[:text] || "\nHello, Aloha world quick brown fox 1234567890"
+
+    new_text("#{String.upcase(font)}#{text}", font: String.to_atom(to_string(font)))
+    |> fit(w, nil, pos: :left)
+    |> pad_bottom(p, "1")
+  end
+
   ###
 
   defimpl String.Chars do
@@ -429,6 +450,12 @@ defmodule Pat do
       Pat.rows(pat)
       |> Enum.intersperse("\n")
       |> IO.iodata_to_binary()
+    end
+  end
+
+  defimpl Phoenix.HTML.Safe do
+    def to_iodata(pat) do
+      Jason.encode!(pat)
     end
   end
 end

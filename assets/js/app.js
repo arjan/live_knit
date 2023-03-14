@@ -4,9 +4,11 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import { LineChartHook } from "./analyze";
+import { PatCanvas } from "./pat";
 
 const hooks = {
   LineChartHook,
+  PatCanvas,
   ImageUpload: {
     mounted() {
       document.getElementById("fileUpload").addEventListener("change", (e) => {

@@ -258,3 +258,21 @@ img.movie {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.pattern-canvas-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.pattern-canvas-container canvas {
+  margin: auto;
+  image-rendering: pixelated;
+}
+.pattern-canvas-container.horizontal canvas {
+  min-width: 80vw;
+  height: auto;
+}
+.pattern-canvas-container.vertical canvas {
+  min-height: 60vw;
+  width: auto;
+}

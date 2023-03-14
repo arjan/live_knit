@@ -8,7 +8,7 @@ defmodule Pat.Font do
     :sigi7 => "sigi-pixel-font/Sigi-7px-Regular.json"
   }
 
-  defstruct name: nil, height: nil, glyphs: %{}, stride: nil
+  defstruct name: nil, height: nil, glyphs: %{}, stride: 0
 
   alias __MODULE__, as: Font
 
@@ -38,7 +38,11 @@ defmodule Pat.Font do
       |> Jason.decode!()
 
     for glyph <- data["glyphs"],
-        reduce: %Font{name: data["name"], height: data["height"], stride: stride} do
+        reduce: %Font{
+          name: data["name"],
+          height: data["height"],
+          stride: stride || data["stride"] || 0
+        } do
       font ->
         canvas =
           case glyph do

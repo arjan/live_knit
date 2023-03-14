@@ -7,7 +7,7 @@ defmodule LiveKnitWeb.Live.Pat do
   alias LiveKnit.Storage
 
   @initial """
-  new(20,10)
+  new_text("hi")
   """
 
   @impl Phoenix.LiveView

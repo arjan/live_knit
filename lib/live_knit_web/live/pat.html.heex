@@ -43,16 +43,6 @@
         <button phx-click="pattern-load" class="btn btn-secondary">Load</button>
         <button phx-click="pattern-delete" class="btn btn-secondary">Delete</button>
       </div>
-
-      <div class="mb-4">
-        <h5>Load sprite</h5>
-        <%= if !@image_code do %>
-          <input type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload" />
-        <% else %>
-          <textarea><%= @image_code %></textarea>
-          <button phx-click="image-code-reset" class="btn">X</button>
-        <% end %>
-      </div>
     </div>
   </div>
 
@@ -60,15 +50,34 @@
     <div class="alert alert-danger"><%= @error_message %></div>
   <% end %>
 
-  <div class="row">
+  <div class="row mb-10">
     <div class="col-12 pt-5 pb-5 bg-light border knitting-area">
-      <div class={"knitting future #{knitting_size_class(@canvas.w)}"}>
-        <%= for row <- Pat.rows(@canvas) do %>
-          <.row row={row} />
-        <% end %>
-      </div>
+      <div
+        id="pat"
+        class={
+          "pattern-canvas-container #{(@canvas.h >= @canvas.w && "vertical") || "horizontal"}"
+        }
+        phx-hook="PatCanvas"
+        phx-update="ignore"
+        data-pat={@canvas.data}
+        data-w={@canvas.w}
+        data-h={@canvas.h}
+      />
     </div>
   </div>
 
-  <textarea><%= to_string(@canvas) %></textarea>
+  <div class="mb-4">
+    <h5>Copy output</h5>
+    <textarea><%= to_string(@canvas) %></textarea>
+  </div>
+
+  <div class="mb-4">
+    <h5>Load sprite</h5>
+    <%= if !@image_code do %>
+      <input type="file" accept="image/*" id="fileUpload" phx-hook="ImageUpload" />
+    <% else %>
+      <textarea><%= @image_code %></textarea>
+      <button phx-click="image-code-reset" class="btn">X</button>
+    <% end %>
+  </div>
 </div>
