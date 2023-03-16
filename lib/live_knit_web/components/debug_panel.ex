@@ -20,4 +20,8 @@ defmodule LiveKnitWeb.Components.DebugPanel do
     LiveKnit.SerialStub.read("E:1")
     {:noreply, socket}
   end
+
+  def handle_event(_, _, socket) do
+    {:noreply, socket}
+  end
 end
